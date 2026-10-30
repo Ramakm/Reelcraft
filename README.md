@@ -118,6 +118,57 @@ reelcraft render clip.mp4 out.mp4 --template motion-pop --sound      # every eff
 
 They mix under your original audio, which is never replaced. `reelcraft sounds` lists them with each effect's default; `reelcraft sound whoosh whoosh.wav` exports one so you can listen first.
 
+## Real-footage recipes
+
+Both recipes were built and rendered on real vertical clips: a 51-second interview short and a 98-second podcast clip, each with the speaker filling the frame. The footage isn't in this repo, so the strips below show the same plans on the built-in sample presenter. Each plan is in [`examples/`](examples) and is timed to the transcript of its clip.
+
+### Interview short: [`interview-explainer.json`](examples/interview-explainer.json)
+
+A 51s interview with extreme close-ups, two speakers cutting back and forth, and a channel logo in the bottom-left corner.
+
+<p align="center"><img src="assets/recipe-interview-explainer.jpg" alt="The interview recipe at six moments" width="900"></p>
+
+| Moment | Effects |
+|---|---|
+| Opening question | `kinetic-title` hook with the key word boxed, `progress-bar` along the top |
+| Whole clip | `grade` (soft film look) and `film` (light grain, gentle vignette) |
+| Every answer | `subtitles` in the `mixed` style, four words at a time, kept clear of the logo |
+| Speaker introduced | `lower-third` placed at the top (`at: top`) so it stays off the captions and logo |
+| Each "yes" | `sticker` check mark that pops in |
+| The caveat | `kinetic-title` with a coral box on the word that matters |
+| The big answer | gentle `punch-in` (1.08, small enough not to crop the logo) and a larger check |
+| Closing line | `kinetic-title` that restates the point |
+
+```bash
+reelcraft render interview.mp4 out.mp4 --plan examples/interview-explainer.json   # needs a captions.srt of your clip
+```
+
+### Podcast clip: [`podcast-breakdown.json`](examples/podcast-breakdown.json)
+
+A 98s clip, tight on the host's face, with captions **already burned in** along the bottom. So every graphic stays at the very top or bottom edge.
+
+<p align="center"><img src="assets/recipe-podcast-breakdown.jpg" alt="The podcast recipe at six moments" width="900"></p>
+
+| Moment | Effects |
+|---|---|
+| Opening | `kinetic-title` hook, `progress-bar` along the bottom for a long clip |
+| A key claim | `kinetic-title` chapter title with a multi-word highlight |
+| "Not so fast" | `punch-in`, `shake` and a two-part title, with `rgb-split` on the word "deceive" |
+| The speaker's chatbot example | `notification` banners that quote what the chatbot says |
+| The closing thought | `grade` (dream), `rgb-split`, `lens` (liquid glass over the face), `sparkles` and a title |
+
+```bash
+reelcraft render podcast.mp4 out.mp4 --plan examples/podcast-breakdown.json
+```
+
+### What real footage taught us
+
+- **Face tracking is now YuNet.** Haar cascades handled the sample clip but failed on extreme close-ups and turned heads. Reelcraft now bundles [YuNet](reelcraft/models/NOTICE.md) (230 KB, MIT) and falls back to Haar only if it's missing.
+- **Tracking respects cuts.** Interviews cut between speakers. Smoothing now holds a face until the cut and snaps after it, instead of gliding across the frame, and tiny false detections are dropped.
+- **Don't fight what's already on screen.** Logos and burned-in captions were the real constraint. `lower-third` gained `at: top|bottom`, and the podcast plan keeps everything off the caption zone.
+- **Use the tool that fits the frame.** On a tight close-up there's no room for chat bubbles beside the face, so the podcast recipe uses `notification` banners instead of `messages`.
+- **Captions need a transcript you can trust.** Reelcraft doesn't transcribe, so we used a local Whisper run to get an `.srt` and corrected one mis-heard phrase by hand. Always read captions before posting.
+
 ## Ask Claude
 
 ```

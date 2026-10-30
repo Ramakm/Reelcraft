@@ -1,5 +1,5 @@
 {
-  "_comment": "51s vertical interview short, extreme close-ups, a channel logo bottom-left. Recipe: hook title, name plate kept to the top, mixed-style captions, a YES check on each answer, a NOT CONSCIOUS YET beat and a closing line. Needs captions.srt next to where you run it (any .srt of the clip).",
+  "_comment": "51s vertical interview short, extreme close-ups, a channel logo bottom-left. Recipe: hook title, name plate kept to the top, mixed-style captions, a YES check on each answer, a NOT CONSCIOUS YET beat and a closing line. Needs captions.srt next to where you run it (any .srt of the clip). Replace Guest Name / Role with who is speaking.",
   "effects": [
     {
       "fx": "grade",
@@ -44,8 +44,8 @@
       "fx": "lower-third",
       "start": 5.7,
       "end": 9.6,
-      "name": "Geoffrey Hinton",
-      "role": "Computer scientist",
+      "name": "Guest Name",
+      "role": "Role",
       "at": "top",
       "accent": "amber",
       "sound": "swish"

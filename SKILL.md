@@ -54,6 +54,14 @@ Match the user's words to an effect (aliases work: "zoom" is `punch-in`, "subtit
 
 Single effect without a plan: `RC render <video> out.mp4 -e "punch-in@2-3.5 zoom=1.5"` (repeat `-e` to stack).
 
+## Real footage checklist
+Before writing a plan, look at a contact sheet of the clip (`RC still <video> --at 0,5,10,... sheet.png`) and note:
+- **Burned-in captions or logos.** Keep every graphic away from them: `at: top` on `lower-third`, `kinetic-title`, `notification`, and don't add `subtitles` over existing captions.
+- **How tight the framing is.** On close-ups there's no room beside the face. Prefer top/bottom-edge graphics (`kinetic-title`, `notification`, `progress-bar`, stickers) over `messages` or `terminal`, and keep `punch-in` small (about 1.08) if it would crop a logo.
+- **Cuts between speakers.** Face tracking handles them (it snaps at a cut, never glides). Check a still on each speaker.
+- **Timing from the transcript.** If the user has an `.srt`, take moments from it. Otherwise ask for the times; don't guess from the picture.
+Recipes for two real clips are in `examples/interview-explainer.json` and `examples/podcast-breakdown.json`.
+
 ## Rules of thumb
 - Use the user's real words and numbers in titles, captions and stat cards. Never invent statistics.
 - Face tracking is automatic. If a still shows effects aimed at the wrong spot (no face found or wrong person), pin it: `--face x,y,size` as fractions of the frame, e.g. `--face 0.5,0.35,0.28`.
