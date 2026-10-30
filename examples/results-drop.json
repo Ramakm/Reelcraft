@@ -1,0 +1,10 @@
+{
+  "_comment": "Show a number landing, then celebrate. Replace 2.4M with your real figure.",
+  "effects": [
+    {"fx": "spotlight", "start": 1.0, "end": 4.0},
+    {"fx": "stat-card", "start": 1.2, "end": 4.5, "value": "2.4M", "label": "views this week", "at": "below"},
+    {"fx": "shake", "start": 2.6, "end": 3.3},
+    {"fx": "confetti", "start": 3.0, "end": 6.0, "at": "below"},
+    {"fx": "badge", "start": 3.2, "end": 7.0, "text": "NEW RECORD", "shape": "burst", "at": "top-left"}
+  ]
+}

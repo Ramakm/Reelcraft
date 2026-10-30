@@ -1,0 +1,12 @@
+{
+  "_comment": "A punchy 8-second opener. Drop times to fit your clip.",
+  "effects": [
+    {"fx": "grade", "start": 0, "end": 8, "look": "teal-orange", "strength": 0.8},
+    {"fx": "film", "start": 0, "end": 8},
+    {"fx": "lower-third", "start": 0.4, "end": 3.6, "name": "Your Name", "role": "Creator"},
+    {"fx": "punch-in", "start": 3.8, "end": 5.0, "zoom": 1.45},
+    {"fx": "kinetic-title", "start": 4.0, "end": 7.0, "text": "WAIT FOR *IT*"},
+    {"fx": "sticker", "start": 4.2, "end": 7.0, "name": "flame", "at": "top-right"},
+    {"fx": "sparkles", "start": 4.0, "end": 7.0}
+  ]
+}

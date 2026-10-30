@@ -1,0 +1,10 @@
+{
+  "_comment": "Camcorder diary vibe.",
+  "effects": [
+    {"fx": "vhs", "start": 0, "end": 8},
+    {"fx": "rgb-split", "start": 0.0, "end": 1.0},
+    {"fx": "caption", "start": 2, "end": 5, "text": "day one of the new channel", "accent": "lime"},
+    {"fx": "glitch", "start": 5.5, "end": 6.2},
+    {"fx": "ticker", "start": 5.5, "end": 8, "text": "TAPE 01  •  DO NOT ERASE"}
+  ]
+}
