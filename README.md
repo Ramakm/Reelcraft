@@ -12,8 +12,8 @@ Describe the edit to Claude. It plans it, checks the frames and renders the vide
   <img alt="Works with Claude Code" src="https://img.shields.io/badge/Claude%20Code-skill-111114?style=flat-square">
 </p>
 
-<p align="center"><img src="assets/demo.gif" alt="A sample clip getting a lower third, punch-in, title, sticker, stat card and confetti" width="270"></p>
-<p align="center"><sub>One plan, ten effects, on the built-in sample clip (an illustrated presenter, not real footage).</sub></p>
+<p align="center"><img src="assets/reelcraft-demo.gif" alt="Two real clips edited with Reelcraft: an interview short, then a podcast clip" width="300"></p>
+<p align="center"><sub><b>Part 1</b> an interview short &nbsp;·&nbsp; <b>Part 2</b> a podcast clip. Titles, captions, stickers, a camera whip, notifications and a liquid-glass lens, all from the plans in <a href="examples"><code>examples/</code></a>.</sub></p>
 
 ---
 
@@ -48,7 +48,7 @@ On Windows (PowerShell) use `$HOME\.claude\skills\reelcraft` as the folder. To u
 | **Motion** | Animated type and graphics | `kinetic-title` `lower-third` `caption` `subtitles` `callout` `stat-card` `countdown` `ticker` `progress-bar` `messages` `notification` `terminal` `underline` `speed-lines` |
 | **Sticker** | Die-cut art and particles | `sticker` (10 designs) `badge` `confetti` `sparkles` `float-up` `sticker-swipe` |
 
-<p align="center"><img src="assets/gallery.jpg" alt="Every Reelcraft effect on the sample clip" width="900"></p>
+<p align="center"><img src="assets/gallery.jpg" alt="Every Reelcraft effect on real footage" width="900"></p>
 
 Every option of every effect is in the [catalog](docs/CATALOG.md).
 
@@ -120,11 +120,11 @@ They mix under your original audio, which is never replaced. `reelcraft sounds` 
 
 ## Real-footage recipes
 
-Both recipes were built and rendered on real vertical clips: a 51-second interview short and a 98-second podcast clip, each with the speaker filling the frame. The footage isn't in this repo, so the strips below show the same plans on the built-in sample presenter. Each plan is in [`examples/`](examples) and is timed to the transcript of its clip.
+Both recipes were built and rendered on real vertical clips: a 51-second interview short and a 98-second podcast clip, each with the speaker filling the frame. The frames below are straight from those edits, and each plan is in [`examples/`](examples), timed to the transcript of its clip. The demo GIF above is cut from the same two renders, with a `whip` between the parts and a `badge` for each label, both added with Reelcraft.
 
 ### Interview short: [`interview-explainer.json`](examples/interview-explainer.json)
 
-A 51s interview with extreme close-ups, two speakers cutting back and forth, and a channel logo in the bottom-left corner.
+A 51s interview with extreme close-ups, two speakers cutting back and forth, and a channel logo in the bottom-left corner. The name plate in `examples/` uses a placeholder (`Guest Name`); set it to whoever is speaking.
 
 <p align="center"><img src="assets/recipe-interview-explainer.jpg" alt="The interview recipe at six moments" width="900"></p>
 
@@ -167,6 +167,7 @@ reelcraft render podcast.mp4 out.mp4 --plan examples/podcast-breakdown.json
 - **Tracking respects cuts.** Interviews cut between speakers. Smoothing now holds a face until the cut and snaps after it, instead of gliding across the frame, and tiny false detections are dropped.
 - **Don't fight what's already on screen.** Logos and burned-in captions were the real constraint. `lower-third` gained `at: top|bottom`, and the podcast plan keeps everything off the caption zone.
 - **Use the tool that fits the frame.** On a tight close-up there's no room for chat bubbles beside the face, so the podcast recipe uses `notification` banners instead of `messages`.
+- **Anchors stay on screen.** On a face bigger than the frame, "top-right" used to push stickers and badges off the edge. Named anchors now keep a safe margin.
 - **Captions need a transcript you can trust.** Reelcraft doesn't transcribe, so we used a local Whisper run to get an `.srt` and corrected one mis-heard phrase by hand. Always read captions before posting.
 
 ## Ask Claude
@@ -257,4 +258,5 @@ An effect is about 15 lines, and a template is one JSON file. See [CONTRIBUTING.
 ## Credits
 
 Made by [Ramakrushna Mohapatra](https://github.com/Ramakm).
+Demo footage in the images and GIF belongs to its original owners (a *60 Minutes* interview and a podcast clip). It's shown only to demonstrate the editor, and none of the source video is in this repo. If you own it and want it removed, open an issue and it will be.
 Fonts (SIL OFL): Bebas Neue, DM Serif Display, Poppins, Caveat Brush; licences are in [`reelcraft/fonts/`](reelcraft/fonts). Face detection: OpenCV (Apache 2.0). Everything else is MIT, see [LICENSE](LICENSE).

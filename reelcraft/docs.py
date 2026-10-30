@@ -30,11 +30,11 @@ def _window(eff):
     return start, start + eff.default_len
 
 
-def thumb(eff, clip, size=(360, 640)):
+def thumb(eff, clip, size=(360, 640), face=demo.FACE):
     start, end = _window(eff)
     entry = {"fx": eff.name, "start": start, "end": end, **SHOWCASE.get(eff.name, {})}
     at = start + (end - start) * MOMENT.get(eff.name, 0.55)
-    imgs, _ = R.stills(clip, lambda d: P.build([entry], None), [at], face=demo.FACE)
+    imgs, _ = R.stills(clip, lambda d: P.build([entry], None), [at], face=face)
     return Image.fromarray(imgs[0]).resize(size, Image.LANCZOS)
 
 
@@ -60,12 +60,28 @@ def write_catalog(path):
     open(path, "w").write("\n".join(lines))
 
 
-def write_gallery(outdir, per_effect=False):
+def excerpt(src, start, dur, dst):
+    """Cut a short, accurately-timed piece of a longer clip (re-encoded so the cut is frame-exact)."""
+    import subprocess
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", str(start), "-t", str(dur), "-i", src, "-c:v", "libx264", "-crf", "16",
+                    "-pix_fmt", "yuv420p", "-c:a", "aac", dst], check=True)
+    return dst
+
+
+def write_gallery(outdir, per_effect=False, footage=None):
+    """Effect gallery + template sheet. With `footage` (paths to your own clips) the thumbnails use real
+    footage and real face tracking; without it, the built-in sample presenter."""
     load_library()
     os.makedirs(outdir, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:
-        clip = os.path.join(tmp, "demo.mp4")
-        demo.make_demo_clip(clip, 6)
+        if footage:
+            clips = [excerpt(f, 2.0, 10.0, os.path.join(tmp, f"clip{i}.mp4")) for i, f in enumerate(footage)]
+            face = None
+        else:
+            clips = [os.path.join(tmp, "demo.mp4")]
+            demo.make_demo_clip(clips[0], 6)
+            face = demo.FACE
+        clip = clips[-1]            # the effect gallery uses the last clip (the better-lit one when two are given)
         effs = [e for c in CATEGORIES for e in by_category()[c]]
         tw, th, lab = 270, 480, 44
         cols = 8
@@ -74,7 +90,7 @@ def write_gallery(outdir, per_effect=False):
         d = ImageDraw.Draw(sheet)
         f = font("ui-semi", 17)
         for i, e in enumerate(effs):
-            im = thumb(e, clip, (tw, th))
+            im = thumb(e, clip, (tw, th), face)
             x, y = (i % cols) * tw, (i // cols) * (th + lab)
             sheet.paste(im, (x, y))
             d.text((x + 12, y + th + 12), e.name, font=f, fill=(238, 232, 218))
@@ -83,11 +99,12 @@ def write_gallery(outdir, per_effect=False):
             print("  ", e.name)
         sheet.save(os.path.join(outdir, "gallery.jpg"), quality=86)
         print("wrote", os.path.join(outdir, "gallery.jpg"))
-        write_templates_sheet(clip, outdir)
-    write_recipe_sheets(outdir)
+        write_templates_sheet(clips, outdir, face)
+    if not footage:
+        write_recipe_sheets(outdir)
 
 
-def write_templates_sheet(clip, outdir):
+def write_templates_sheet(clips, outdir, face=demo.FACE):
     """One frame from each built-in template, at the moment it looks best, on a labelled sheet."""
     tpls = {k: v for k, v in T.available().items() if v["source"] == "built-in"}
     tw, th, lab = 300, 533, 62
@@ -98,7 +115,8 @@ def write_templates_sheet(clip, outdir):
     f1, f2 = font("ui-semi", 18), font("ui", 14)
     for i, (name, t) in enumerate(sorted(tpls.items())):
         entries = T.entries(name)
-        imgs, _ = R.stills(clip, lambda dur: P.build(entries, dur), [min(MOMENT_T.get(name, 0.58), 0.95) * 6], face=demo.FACE)
+        clip = clips[i % len(clips)]          # with two clips, templates alternate between them
+        imgs, _ = R.stills(clip, lambda dur: P.build(entries, dur), [min(MOMENT_T.get(name, 0.58), 0.95) * clips_len(clip)], face=face)
         x, y = (i % cols) * tw, (i // cols) * (th + lab)
         sheet.paste(Image.fromarray(imgs[0]).resize((tw, th), Image.LANCZOS), (x, y))
         d.text((x + 12, y + th + 10), name, font=f1, fill=(238, 232, 218))
@@ -139,3 +157,28 @@ def write_recipe_sheets(outdir):
             path = os.path.join(outdir, f"recipe-{name}.jpg")
             sheet.save(path, quality=88)
             print("wrote", path)
+
+
+def clips_len(path):
+    from reelcraft.core import media as M
+    return M.probe(path).duration
+
+
+def contact_strip(video, times, labels, out, thumb_w=270):
+    """Frames from a (rendered) video at the given times, side by side with labels. Handy for READMEs and reviews."""
+    from reelcraft.core import media as M
+    m = M.probe(video)
+    W = thumb_w
+    H = int(round(W * m.height / m.width))
+    lab = 46
+    sheet = Image.new("RGB", (len(times) * W, H + lab), (17, 17, 20))
+    d = ImageDraw.Draw(sheet)
+    f = font("ui-semi", 15)
+    for i, t in enumerate(times):
+        fr = next(M.frames(m, W * 2, H * 2, m.fps, start=t, count=1), None)
+        if fr is None:
+            raise M.MediaError(f"no frame at {t}s")
+        sheet.paste(Image.fromarray(fr).resize((W, H), Image.LANCZOS), (i * W, 0))
+        text = f"{t:g}s  {labels[i]}" if i < len(labels) and labels[i] else f"{t:g}s"
+        d.text((i * W + 12, H + 14), text, font=f, fill=(238, 232, 218))
+    sheet.save(out, quality=90)

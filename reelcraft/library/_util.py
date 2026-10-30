@@ -8,14 +8,25 @@ from reelcraft.core.easing import clamp, out_cubic, smooth
 
 
 def place(ctx, at, gap=0.15):
-    """'above' | 'left' | ... or 'x,y' as fractions of the frame -> pixel position."""
+    """'above' | 'left' | ... or 'x,y' as fractions of the frame -> pixel position.
+
+    Named anchors are kept inside a safe margin, so on a tight close-up (a face bigger than the frame)
+    stickers and badges land at the edge of the picture instead of hanging off it."""
     if "," in str(at):
         try:
             fx, fy = (float(v) for v in str(at).split(","))
         except ValueError:
             raise ValueError(f"position {at!r} should be a name like 'above' or fractions like '0.8,0.3'") from None
         return fx * ctx.W, fy * ctx.H
-    return ctx.anchor(at, gap)
+    x, y = ctx.anchor(at, gap)
+    return float(np.clip(x, ctx.W * 0.13, ctx.W * 0.87)), float(np.clip(y, ctx.H * 0.09, ctx.H * 0.91))
+
+
+def keep_inside(ctx, x, y, spr, scale=1.0, margin=0.02):
+    """Nudge a sprite's centre so the whole thing (at its current scale) stays on screen."""
+    h, w = spr.shape[:2]
+    mx, my = w * scale / 2 + ctx.W * margin, h * scale / 2 + ctx.W * margin
+    return float(np.clip(x, mx, max(mx, ctx.W - mx))), float(np.clip(y, my, max(my, ctx.H - my)))
 
 
 def fit_size(txt, fname, max_w, max_size, min_size=18):
@@ -56,4 +67,4 @@ def hold_curve(ctx, fin=0.25, fout=0.25):
     return min(out_cubic(ctx.lt / fin) if fin else 1.0, out_cubic(ctx.left / fout) if fout else 1.0)
 
 
-__all__ = ["place", "fit_size", "fade_io", "wrap_words", "noise1", "hold_curve", "np", "clamp"]
+__all__ = ["place", "keep_inside", "fit_size", "fade_io", "wrap_words", "noise1", "hold_curve", "np", "clamp"]

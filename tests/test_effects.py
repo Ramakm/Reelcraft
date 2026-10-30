@@ -48,3 +48,19 @@ def test_title_markup_handles_punctuation_and_multiword_spans():
     assert parse_markup("AI SOLVED *PROTEIN FOLDING* FAST") == [("AI", False), ("SOLVED", False), ("PROTEIN", True), ("FOLDING", True), ("FAST", False)]
     assert parse_markup("no stars here") == [("no", False), ("stars", False), ("here", False)]
     assert all("*" not in w for w, _ in parse_markup("*a* b* *c"))
+
+
+def test_stickers_and_badges_stay_fully_on_screen_even_on_a_huge_face(frame):
+    """A face bigger than the frame used to push top-left/top-right stickers half off the picture."""
+    from reelcraft.core.context import Ctx, Face
+    from reelcraft.core.registry import REGISTRY, coerce
+    big = Ctx(360, 640, 30, Face(180, 320, 520, 650))
+    for name, opts in (("badge", {"text": "NEW RECORD", "shape": "burst", "at": "top-left", "size": 90}),
+                       ("sticker", {"name": "star", "at": "top-right", "size": 300})):
+        eff = REGISTRY[name]
+        big.window(1.2, 1.0, 3.5)
+        base = np.zeros_like(frame)
+        out = eff.fn(big, base.copy(), **coerce(eff, opts))
+        ys, xs = np.nonzero(out.any(axis=2))
+        assert xs.min() >= 0 and xs.max() <= 359 and ys.min() >= 0
+        assert xs.min() > 2 and xs.max() < 357, f"{name} touches the left/right edge"

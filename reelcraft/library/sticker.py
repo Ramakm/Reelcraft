@@ -9,7 +9,7 @@ from reelcraft.core.canvas import (blit, draw_sprite, over, rgb, rrect_sprite, t
 from reelcraft.core.easing import clamp, lerp, out_back, out_cubic, out_elastic, smooth
 from reelcraft.core.registry import Param, effect
 
-from ._util import fade_io, noise1, place
+from ._util import fade_io, keep_inside, noise1, place
 
 
 # ---------- shape toolkit ----------
@@ -176,6 +176,7 @@ def sticker(ctx, frame, name, at, size, color, tilt, motion, flip):
     x, y = place(ctx, at, 0.1)
     sc, rot, dy, a = _anim(ctx, motion)
     spr = sticker_art(name, max(32, int(ctx.px(size))), color or None)
+    x, y = keep_inside(ctx, x, y, spr)
     return blit(frame, spr, x, y + dy, scale=sc, rot=tilt + rot, alpha=a, flip_x=flip)
 
 
@@ -211,6 +212,7 @@ def badge(ctx, frame, text, shape, at, color, ink, size, tilt, motion):
     x, y = place(ctx, at, 0.08)
     sc, rot, dy, a = _anim(ctx, motion)
     spr = _badge(text, shape, color, ink, max(16, int(ctx.px(size))))
+    x, y = keep_inside(ctx, x, y, spr)
     return blit(frame, spr, x, y + dy, scale=sc, rot=tilt + rot, alpha=a)
 
 

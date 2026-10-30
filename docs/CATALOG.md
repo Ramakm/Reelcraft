@@ -309,7 +309,7 @@ _default length 2.5s · follows the face · aliases: `title`, `words`, `slam`_
 
 Name plate that wipes in at the bottom left.
 
-_default length 3.5s · aliases: `nameplate`, `name-tag`, `intro-card`_
+_default length 3.5s · follows the face · aliases: `nameplate`, `name-tag`, `intro-card`_
 
 | Option | Default | What it does |
 |---|---|---|
@@ -318,6 +318,7 @@ _default length 3.5s · aliases: `nameplate`, `name-tag`, `intro-card`_
 | `accent` | `'coral'` | Accent stripe and role colour. |
 | `ink` | `'#16161A'` | Plate colour. |
 | `size` | `60` | Name size at 1080 wide. |
+| `at` | `'auto'` | auto, top or bottom. Use top when the bottom has a logo or captions. (auto / top / bottom) |
 
 ### `messages`
 

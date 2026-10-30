@@ -203,7 +203,34 @@ def cmd_demo(args):
 
 def cmd_gallery(args):
     from reelcraft.docs import write_gallery
-    write_gallery(args.output, args.thumbs)
+    write_gallery(args.output, args.thumbs, args.footage)
+    return 0
+
+
+def cmd_strip(args):
+    from reelcraft.docs import contact_strip
+    times = [P.parse_time(t) for t in args.at.split(",")]
+    labels = args.labels.split("|") if args.labels else []
+    contact_strip(args.input, times, labels, args.output, args.width)
+    print(f"{len(times)} frame(s) -> {args.output}")
+    return 0
+
+
+def cmd_gif(args):
+    import subprocess
+    from reelcraft.core.media import need_ffmpeg
+    need_ffmpeg()
+    vf = (f"fps={args.fps},scale={args.width}:-1:flags=lanczos,split[a][b];"
+          f"[a]palettegen=max_colors={args.colors}:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle")
+    cmd = ["ffmpeg", "-v", "error", "-y"]
+    if args.start:
+        cmd += ["-ss", str(args.start)]
+    if args.duration:
+        cmd += ["-t", str(args.duration)]
+    r = subprocess.run(cmd + ["-i", args.input, "-vf", vf, "-loop", "0", args.output])
+    if r.returncode:
+        raise MediaError("ffmpeg could not write the gif")
+    print(f"wrote {args.output} ({os.path.getsize(args.output) / 1048576:.1f} MB)")
     return 0
 
 
@@ -240,7 +267,14 @@ def build_parser():
     p = sub.add_parser("doctor", help="check the install"); p.set_defaults(fn=cmd_doctor)
     p = sub.add_parser("catalog", help="regenerate docs/CATALOG.md"); p.add_argument("output", nargs="?", default="docs/CATALOG.md"); p.set_defaults(fn=cmd_catalog)
     p = sub.add_parser("demo", help="make a short sample clip to try things on"); p.add_argument("output", nargs="?", default="demo.mp4"); p.add_argument("--seconds", type=float, default=8); p.set_defaults(fn=cmd_demo)
-    p = sub.add_parser("gallery", help="render a thumbnail for every effect"); p.add_argument("output", nargs="?", default="assets"); p.add_argument("--thumbs", action="store_true"); p.set_defaults(fn=cmd_gallery)
+    p = sub.add_parser("gallery", help="render a thumbnail for every effect"); p.add_argument("output", nargs="?", default="assets"); p.add_argument("--thumbs", action="store_true")
+    p.add_argument("--footage", action="append", metavar="VIDEO", help="use your own clip(s) instead of the sample presenter (repeatable)"); p.set_defaults(fn=cmd_gallery)
+    p = sub.add_parser("strip", help="make a labelled contact strip of frames from a video")
+    p.add_argument("input"); p.add_argument("output"); p.add_argument("--at", required=True, help="comma-separated times"); p.add_argument("--labels", help="labels separated by |")
+    p.add_argument("--width", type=int, default=270); p.set_defaults(fn=cmd_strip)
+    p = sub.add_parser("gif", help="export a video (or part of it) as an optimised looping GIF")
+    p.add_argument("input"); p.add_argument("output"); p.add_argument("--width", type=int, default=320); p.add_argument("--fps", type=int, default=12)
+    p.add_argument("--colors", type=int, default=128); p.add_argument("--start", type=float); p.add_argument("--duration", type=float); p.set_defaults(fn=cmd_gif)
     return ap
 
 
