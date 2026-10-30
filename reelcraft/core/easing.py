@@ -1,9 +1,12 @@
 """Easing curves and tiny animation helpers. Every function maps 0..1 to 0..1 (overshoot allowed)."""
 import math
 
+import numpy as np
+
 
 def clamp(x, lo=0.0, hi=1.0):
-    return max(lo, min(hi, x))
+    """Works on floats and on whole numpy masks."""
+    return np.clip(x, lo, hi) if isinstance(x, np.ndarray) else max(lo, min(hi, x))
 
 
 def lerp(a, b, t):

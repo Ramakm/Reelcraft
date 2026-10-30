@@ -12,11 +12,12 @@ from ._util import fade_io, hold_curve
 
 
 @effect("letterbox", "frame", "Cinematic bars slide in from top and bottom.",
-        params=[Param("ratio", 2.39, "Target aspect of the visible picture (2.39 = widescreen)."),
+        params=[Param("ratio", 0.0, "Aspect of the visible picture. 0 = auto: widescreen 2.39 on landscape video, 4:5 on vertical."),
                 Param("color", "#000000", "Bar colour.")],
         aliases=("cinema", "bars"), default_len=4)
 def letterbox(ctx, frame, ratio, color):
-    visible = ctx.W / ratio
+    ratio = ratio or (2.39 if ctx.W >= ctx.H else 0.8)
+    visible = min(ctx.H, ctx.W / ratio)
     bar = max(0.0, (ctx.H - visible) / 2) * hold_curve(ctx, 0.5, 0.4)
     fill_rect(frame, 0, 0, ctx.W, bar, color)
     fill_rect(frame, 0, ctx.H - bar, ctx.W, ctx.H, color)
@@ -53,10 +54,8 @@ def polaroid(ctx, frame, caption, color, tilt, size):
     pad, bottom = int(W * 0.045), int(W * 0.16)
     cw, ch, r = W + 2 * pad, H + pad + bottom, int(W * 0.02)
     final = size * W / cw
-    sc = lerp(1.0 / 1.0, final, out_cubic(k))
+    sc = lerp(1.0, final, out_cubic(k))
     base = _backdrop(W, H, color)
-    out = frame if k >= 0.999 and False else base.copy()
-    # While the photo is still big, the live frame IS the picture; cross to the table as it shrinks.
     card = _card_base(cw, ch, r).copy()
     card[pad:pad + H, pad:pad + W, :3] = frame
     card[pad:pad + H, pad:pad + W, 3] = 255
@@ -65,7 +64,7 @@ def polaroid(ctx, frame, caption, color, tilt, size):
         blit(card, t, cw / 2, pad + H + bottom * 0.5)
     ang = tilt * out_cubic(k)
     shadow_a = out_cubic(k)
-    out = lerp_frames(frame, base, smooth(k * 1.6))
+    out = lerp_frames(frame, base, smooth(k * 1.6))    # table fades in as the photo shrinks
     blit(out, _card_shadow(cw, ch, r), W / 2, H / 2 + (H * 0.01), scale=sc, rot=ang, alpha=shadow_a)
     blit(out, card, W / 2, H / 2, scale=sc, rot=ang)
     return out

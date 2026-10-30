@@ -89,7 +89,7 @@ def rgb_split(ctx, frame, amount, mode):
 
 
 @effect("film", "look", "35mm feel: animated grain, gentle vignette and a faint flicker.",
-        params=[Param("grain", 0.07, "Grain strength."), Param("vignette", 0.45, "Corner darkening, 0 to 1.")],
+        params=[Param("grain", 0.035, "Grain strength."), Param("vignette", 0.45, "Corner darkening, 0 to 1.")],
         aliases=("grain", "vignette", "16mm"), default_len=6)
 def film(ctx, frame, grain, vignette):
     H, W = frame.shape[:2]
@@ -114,12 +114,12 @@ def vhs(ctx, frame, label, wobble):
     out[..., 2] = np.roll(out[..., 2], -s, axis=1)
     ys = np.arange(H)
     shift = (wobble * W * 0.004 * np.sin(ys / 38.0 + ctx.t * 5) * (np.sin(ctx.t * 1.7) > 0.3)).astype(int)
-    out = out[ys, (np.arange(W)[None, :] - shift[:, None]) % W]
+    out = out[ys[:, None], (np.arange(W)[None, :] - shift[:, None]) % W]
     out[::3] = (out[::3] * 0.8).astype(np.uint8)
     band = int((ctx.t * 0.25 % 1.0) * H)                    # slow rolling noise band
     out[band:band + max(2, H // 60)] = np.clip(out[band:band + max(2, H // 60)].astype(np.int16) + 28, 0, 255)
     if label:
-        blit(out, text_sprite(f"{label} ▶", "ui-bold", int(ctx.px(46)), "#FFFFFF", stroke=2, stroke_fill="#000000"),
+        blit(out, text_sprite(f"{label} >", "ui-bold", int(ctx.px(46)), "#FFFFFF", stroke=2, stroke_fill="#000000"),
              ctx.W * 0.07, ctx.H * 0.06, anchor=(0, 0.5))
     return out
 

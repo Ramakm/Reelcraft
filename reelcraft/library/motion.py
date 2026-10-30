@@ -114,7 +114,7 @@ def _lower_third(name, role, accent, ink, size):
 @effect("lower-third", "motion", "Name plate that wipes in at the bottom left.",
         params=[Param("name", "Your Name", "Main line."), Param("role", "Creator", "Small line under it (optional)."),
                 Param("accent", "coral", "Accent stripe and role colour."), Param("ink", "#16161A", "Plate colour."),
-                Param("size", 52, "Name size at 1080 wide.")],
+                Param("size", 60, "Name size at 1080 wide.")],
         aliases=("nameplate", "name-tag", "intro-card"), default_len=3.5)
 def lower_third(ctx, frame, name, role, accent, ink, size):
     spr = _lower_third(name, role, accent, ink, int(ctx.px(size)))
@@ -159,7 +159,7 @@ def callout(ctx, frame, text, target, label_at, color):
     sx, sy = tx + (ex - tx) / d * ring_r, ty + (ey - ty) / d * ring_r
     cv2.line(layer, (int(sx), int(sy)), (int(mx), int(my)), col, th, cv2.LINE_AA)
     out = cv2.addWeighted(layer, fade, frame, 1 - fade, 0)
-    size = int(ctx.px(46))
+    size = int(ctx.px(54))
     pill = _pill(text, size, color)
     s = out_back((ctx.lt - 0.25) / 0.3)
     return blit(out, pill, lx, ly, scale=s, rot=-2, alpha=fade * clamp((ctx.lt - 0.25) * 8))

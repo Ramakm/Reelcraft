@@ -69,7 +69,7 @@ def draw_sprite(w, h, painter, ss=3):
     w, h = int(w), int(h)
     img = Image.new("RGBA", (w * ss, h * ss), (0, 0, 0, 0))
     painter(ImageDraw.Draw(img), ss)
-    return np.asarray(img.resize((w, h), Image.LANCZOS))
+    return np.array(img.resize((w, h), Image.LANCZOS))
 
 
 @lru_cache(maxsize=256)
@@ -88,7 +88,7 @@ def text_sprite(txt, fname="ui-bold", size=64, fill="#FFFFFF", stroke=0, stroke_
             x += f.getlength(ch) + tracking
     else:
         d.text((x, pad + stroke), txt, font=f, fill=fill + (255,), stroke_width=stroke, stroke_fill=stroke_fill + (255,))
-    return np.asarray(img)
+    return np.array(img)
 
 
 def rrect_sprite(w, h, radius, fill, outline=None, outline_w=0, alpha=255):
@@ -164,7 +164,7 @@ def tint(spr, color):
 
 # ---------- compositing ----------
 def blit(frame, spr, cx, cy, scale=1.0, rot=0.0, alpha=1.0, anchor=(0.5, 0.5), flip_x=False):
-    """Composite RGBA sprite onto an RGB frame in place. (cx, cy) is where the anchor lands."""
+    """Composite an RGBA sprite onto an RGB frame (or another RGBA sprite) in place. (cx, cy) is where the anchor lands."""
     if alpha <= 0.003 or scale <= 0.002:
         return frame
     H, W = frame.shape[:2]
@@ -198,14 +198,25 @@ def blit(frame, spr, cx, cy, scale=1.0, rot=0.0, alpha=1.0, anchor=(0.5, 0.5), f
     warped = cv2.warpAffine(pre, M2, (bx1 - bx0, by1 - by0), flags=cv2.INTER_LINEAR,
                             borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0))
     a = warped[..., 3:4] / 255.0 * alpha
-    reg = frame[by0:by1, bx0:bx1]
-    reg[:] = np.clip(warped[..., :3] * alpha + reg * (1 - a), 0, 255).astype(np.uint8)
+    _composite(frame[by0:by1, bx0:bx1], warped[..., :3] * alpha, a)
     return frame
 
 
 def _mix(region, src, alpha):
     a = src[..., 3:4].astype(np.float32) / 255.0 * alpha
-    region[:] = np.clip(src[..., :3] * a + region * (1 - a), 0, 255).astype(np.uint8)
+    _composite(region, src[..., :3] * a, a)
+
+
+def _composite(region, premult_rgb, a):
+    """region <- source-over, for RGB or RGBA destinations. premult_rgb is already multiplied by alpha."""
+    if region.shape[2] == 3:
+        region[:] = np.clip(premult_rgb + region * (1 - a), 0, 255).astype(np.uint8)
+        return
+    da = region[..., 3:4].astype(np.float32) / 255.0
+    oa = a + da * (1 - a)
+    rgbo = (premult_rgb + region[..., :3] * da * (1 - a)) / np.maximum(oa, 1e-6)
+    region[..., :3] = np.clip(rgbo, 0, 255).astype(np.uint8)
+    region[..., 3] = np.clip(oa[..., 0] * 255, 0, 255).astype(np.uint8)
 
 
 def fill_rect(frame, x0, y0, x1, y1, color, alpha=1.0):
