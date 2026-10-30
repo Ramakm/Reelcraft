@@ -29,11 +29,27 @@ def _word(word, fname, size, color, accent, boxed):
     return with_shadow(text_sprite(word, fname, size, color), blur=9, offset=(0, 5), opacity=0.5)
 
 
-def _layout_words(text, fname, size, max_w):
-    toks = []
+def parse_markup(text):
+    """'WAIT FOR *IT*?' -> [('WAIT', False), ('FOR', False), ('IT?', True)].
+    *Stars* mark highlighted words. They can wrap several words and may be followed by punctuation."""
+    toks, inside = [], False
     for raw in text.split():
-        accent = raw.startswith("*") and raw.endswith("*") and len(raw) > 2
-        toks.append((raw.strip("*").upper() if fname == "display" else raw.strip("*"), accent))
+        opens = raw.startswith("*")
+        closes = bool(re.search(r"\*\W*$", raw)) and len(raw.strip("*")) > 0 or raw.endswith("*")
+        word = raw.replace("*", "")
+        if not word:
+            inside = opens and not inside if raw == "*" else inside
+            continue
+        toks.append((word, inside or opens))
+        if closes and not (opens and not re.search(r"\*\W*$", raw[1:])):
+            inside = False
+        elif opens:
+            inside = True
+    return toks
+
+
+def _layout_words(text, fname, size, max_w):
+    toks = [(w.upper() if fname == "display" else w, a) for w, a in parse_markup(text)]
     lines = wrap_words([t[0] for t in toks], fname, size, max_w)
     out, i = [], 0
     for ln in lines:
@@ -52,7 +68,7 @@ def _layout_words(text, fname, size, max_w):
 def kinetic_title(ctx, frame, text, at, size, color, accent, font):
     size = int(ctx.px(size))
     max_w = ctx.W * 0.88
-    full = " ".join(w.strip("*") for w in text.split())
+    full = " ".join(w for w, _ in parse_markup(text))
     size = fit_size(full if len(full) < 14 else full[:len(full) // 2 + 3], font, max_w, size)   # allow wrapping to ~2 lines
     lines = _layout_words(text, font, size, max_w)
     lh = size * (0.92 if font == "display" else 1.05)
@@ -114,9 +130,10 @@ def _lower_third(name, role, accent, ink, size):
 @effect("lower-third", "motion", "Name plate that wipes in at the bottom left.",
         params=[Param("name", "Your Name", "Main line."), Param("role", "Creator", "Small line under it (optional)."),
                 Param("accent", "coral", "Accent stripe and role colour."), Param("ink", "#16161A", "Plate colour."),
-                Param("size", 60, "Name size at 1080 wide.")],
-        aliases=("nameplate", "name-tag", "intro-card"), default_len=3.5)
-def lower_third(ctx, frame, name, role, accent, ink, size):
+                Param("size", 60, "Name size at 1080 wide."),
+                Param("at", "auto", "auto, top or bottom. Use top when the bottom has a logo or captions.", ("auto", "top", "bottom"))],
+        face=True, aliases=("nameplate", "name-tag", "intro-card"), default_len=3.5)
+def lower_third(ctx, frame, name, role, accent, ink, size, at):
     spr = _lower_third(name, role, accent, ink, int(ctx.px(size)))
     h, w = spr.shape[:2]
     reveal = out_expo(ctx.lt / 0.55) * (1 - out_cubic(clamp((0.35 - ctx.left) / 0.35)))
@@ -125,7 +142,8 @@ def lower_third(ctx, frame, name, role, accent, ink, size):
     vis = max(2, int(w * reveal))
     crop = spr[:, :vis]
     x = ctx.W * 0.06
-    y = ctx.H * 0.8 if ctx.free_side() == "bottom" else ctx.H * 0.14
+    side = ctx.free_side() if at == "auto" else at
+    y = ctx.H * 0.8 if side == "bottom" else ctx.H * 0.14
     return blit(frame, crop, x, y, anchor=(0, 0.5))
 
 

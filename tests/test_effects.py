@@ -39,3 +39,12 @@ def test_effects_never_mutate_the_input_when_returning_new_frames(frame, ctx):
     ctx.window(1.5, 1.0, 3.0)
     eff.fn(ctx, frame, **eff.defaults())
     assert np.array_equal(frame, before)
+
+
+def test_title_markup_handles_punctuation_and_multiword_spans():
+    from reelcraft.library.motion import parse_markup
+    assert parse_markup("WAIT FOR *IT*") == [("WAIT", False), ("FOR", False), ("IT", True)]
+    assert parse_markup("CAN AI BECOME *CONSCIOUS*?") == [("CAN", False), ("AI", False), ("BECOME", False), ("CONSCIOUS?", True)]
+    assert parse_markup("AI SOLVED *PROTEIN FOLDING* FAST") == [("AI", False), ("SOLVED", False), ("PROTEIN", True), ("FOLDING", True), ("FAST", False)]
+    assert parse_markup("no stars here") == [("no", False), ("stars", False), ("here", False)]
+    assert all("*" not in w for w, _ in parse_markup("*a* b* *c"))

@@ -84,6 +84,7 @@ def write_gallery(outdir, per_effect=False):
         sheet.save(os.path.join(outdir, "gallery.jpg"), quality=86)
         print("wrote", os.path.join(outdir, "gallery.jpg"))
         write_templates_sheet(clip, outdir)
+    write_recipe_sheets(outdir)
 
 
 def write_templates_sheet(clip, outdir):
@@ -110,3 +111,31 @@ def write_templates_sheet(clip, outdir):
 # Where in each template (0..1 of the clip) to take its picture.
 MOMENT_T = {"hype-intro": 0.5, "clean-ugc": 0.55, "retro-tape": 0.72, "editorial": 0.76, "scrapbook": 0.6, "tech-walkthrough": 0.45,
             "typography": 0.34, "motion-pop": 0.55, "noir-story": 0.3, "messages-drop": 0.82, "glass-lens": 0.6, "print-room": 0.62}
+
+
+# Recipes written against real footage. The README shows them on the built-in presenter so no one's footage is shipped.
+RECIPES = {
+    "interview-explainer": [(1.2, "hook title"), (7.5, "name plate"), (18.5, "YES check"), (36.0, "NOT CONSCIOUS YET"), (42.5, "punch-in + check"), (47.0, "closing line")],
+    "podcast-breakdown": [(2.0, "hook title"), (17.0, "chapter title"), (38.5, "NOT SO FAST"), (57.5, "chat as notification"), (74.0, "second notification"), (96.0, "liquid-glass lens")],
+}
+
+
+def write_recipe_sheets(outdir):
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    tw, th, lab = 240, 427, 40
+    with tempfile.TemporaryDirectory() as tmp:
+        clip = os.path.join(tmp, "demo.mp4")
+        demo.make_demo_clip(clip, 100)
+        for name, moments in RECIPES.items():
+            import json
+            entries = [e for e in json.load(open(os.path.join(root, "examples", name + ".json")))["effects"] if e["fx"] != "subtitles"]
+            imgs, _ = R.stills(clip, lambda d: P.build(entries, d), [t for t, _ in moments], face=demo.FACE)
+            sheet = Image.new("RGB", (len(moments) * tw, th + lab), (17, 17, 20))
+            d = ImageDraw.Draw(sheet)
+            f = font("ui-semi", 15)
+            for i, (im, (t, label)) in enumerate(zip(imgs, moments)):
+                sheet.paste(Image.fromarray(im).resize((tw, th), Image.LANCZOS), (i * tw, 0))
+                d.text((i * tw + 10, th + 11), f"{t:g}s  {label}", font=f, fill=(238, 232, 218))
+            path = os.path.join(outdir, f"recipe-{name}.jpg")
+            sheet.save(path, quality=88)
+            print("wrote", path)

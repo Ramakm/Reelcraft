@@ -1,0 +1,120 @@
+{
+  "_comment": "51s vertical interview short, extreme close-ups, a channel logo bottom-left. Recipe: hook title, name plate kept to the top, mixed-style captions, a YES check on each answer, a NOT CONSCIOUS YET beat and a closing line. Needs captions.srt next to where you run it (any .srt of the clip).",
+  "effects": [
+    {
+      "fx": "grade",
+      "start": 0,
+      "end": "end",
+      "look": "film",
+      "strength": 0.55
+    },
+    {
+      "fx": "film",
+      "start": 0,
+      "end": "end",
+      "grain": 0.015,
+      "vignette": 0.3
+    },
+    {
+      "fx": "progress-bar",
+      "start": 0,
+      "end": "end",
+      "color": "amber"
+    },
+    {
+      "fx": "kinetic-title",
+      "start": 0.1,
+      "end": 2.6,
+      "text": "DOES *HUMANITY* KNOW WHAT IT'S DOING?",
+      "at": "top",
+      "size": 118,
+      "sound": "pop"
+    },
+    {
+      "fx": "subtitles",
+      "start": 2.8,
+      "end": "end",
+      "file": "captions.srt",
+      "style": "mixed",
+      "at": "bottom",
+      "size": 66,
+      "max_words": 4
+    },
+    {
+      "fx": "lower-third",
+      "start": 5.7,
+      "end": 9.6,
+      "name": "Geoffrey Hinton",
+      "role": "Computer scientist",
+      "at": "top",
+      "accent": "amber",
+      "sound": "swish"
+    },
+    {
+      "fx": "sticker",
+      "start": 17.8,
+      "end": 19.2,
+      "name": "check",
+      "at": "0.84,0.3",
+      "size": 200,
+      "motion": "pulse",
+      "sound": "pop"
+    },
+    {
+      "fx": "sticker",
+      "start": 21.1,
+      "end": 22.4,
+      "name": "check",
+      "at": "0.84,0.3",
+      "size": 200,
+      "motion": "pulse",
+      "sound": "pop"
+    },
+    {
+      "fx": "sticker",
+      "start": 30.9,
+      "end": 32.3,
+      "name": "check",
+      "at": "0.84,0.3",
+      "size": 200,
+      "motion": "pulse",
+      "sound": "pop"
+    },
+    {
+      "fx": "kinetic-title",
+      "start": 34.0,
+      "end": 38.4,
+      "text": "NOT CONSCIOUS *YET*",
+      "at": "top",
+      "size": 132,
+      "accent": "coral",
+      "sound": "impact"
+    },
+    {
+      "fx": "punch-in",
+      "start": 41.2,
+      "end": 44.0,
+      "zoom": 1.08,
+      "sound": "whoosh"
+    },
+    {
+      "fx": "sticker",
+      "start": 41.3,
+      "end": 44.0,
+      "name": "check",
+      "at": "0.84,0.3",
+      "size": 240,
+      "motion": "pulse",
+      "sound": "success"
+    },
+    {
+      "fx": "kinetic-title",
+      "start": 44.4,
+      "end": 50.2,
+      "text": "HUMANS: *SECOND* MOST INTELLIGENT",
+      "at": "top",
+      "size": 104,
+      "sound": "pop"
+    }
+  ]
+}

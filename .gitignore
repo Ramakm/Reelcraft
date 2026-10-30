@@ -8,5 +8,10 @@ dist/
 .DS_Store
 # local renders
 *_reelcraft.mp4
-*.track.json
+*.track*.json
 out/
+
+# third-party footage used for local testing: never commit
+test-videos/
+*.srt
+!tests/data/sample.srt

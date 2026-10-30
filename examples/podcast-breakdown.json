@@ -1,0 +1,143 @@
+{
+  "_comment": "98s vertical podcast clip, tight on the speaker's face, with captions already burned in along the bottom. Every graphic stays at the very top or bottom edge, clear of the face and the captions. Recipe: hook title, progress bar, chapter titles on the key claims, the speaker's own chatbot example as phone notifications, and a liquid-glass moment for the closing thought.",
+  "effects": [
+    {
+      "fx": "film",
+      "start": 0,
+      "end": "end",
+      "grain": 0.015,
+      "vignette": 0.3
+    },
+    {
+      "fx": "progress-bar",
+      "start": 0,
+      "end": "end",
+      "color": "mint",
+      "at": "bottom"
+    },
+    {
+      "fx": "kinetic-title",
+      "start": 0.3,
+      "end": 3.6,
+      "text": "CAN AI BECOME *CONSCIOUS*?",
+      "at": "top",
+      "size": 128,
+      "sound": "pop"
+    },
+    {
+      "fx": "kinetic-title",
+      "start": 15.9,
+      "end": 20.4,
+      "text": "AI SOLVED *PROTEIN FOLDING*",
+      "at": "top",
+      "size": 98,
+      "accent": "mint",
+      "sound": "pop"
+    },
+    {
+      "fx": "punch-in",
+      "start": 37.7,
+      "end": 39.3,
+      "zoom": 1.16
+    },
+    {
+      "fx": "shake",
+      "start": 37.9,
+      "end": 38.5,
+      "intensity": 0.8,
+      "sound": "impact"
+    },
+    {
+      "fx": "kinetic-title",
+      "start": 37.8,
+      "end": 39.4,
+      "text": "NOT SO *FAST*",
+      "at": "top",
+      "size": 150,
+      "accent": "coral"
+    },
+    {
+      "fx": "kinetic-title",
+      "start": 39.4,
+      "end": 42.0,
+      "text": "IT MIGHT *DECEIVE* US",
+      "at": "top",
+      "size": 112,
+      "accent": "coral",
+      "sound": "pop"
+    },
+    {
+      "fx": "rgb-split",
+      "start": 39.3,
+      "end": 41.6,
+      "amount": 0.008
+    },
+    {
+      "fx": "notification",
+      "start": 56.2,
+      "end": 59.4,
+      "app": "CHATBOT",
+      "title": "ChatGPT being conscious?",
+      "body": "cool. how many ChatGPTs are there?",
+      "icon": "bolt",
+      "sound": "message"
+    },
+    {
+      "fx": "notification",
+      "start": 69.0,
+      "end": 72.0,
+      "app": "CHATBOT",
+      "title": "\"I'm having a bad day\"",
+      "body": "oh gosh, I'm so sorry, that sucks",
+      "icon": "heart",
+      "sound": "message"
+    },
+    {
+      "fx": "notification",
+      "start": 72.7,
+      "end": 75.8,
+      "app": "CHATBOT",
+      "title": "\"I'm having a good day\"",
+      "body": "oh that's great!",
+      "icon": "smile",
+      "sound": "message"
+    },
+    {
+      "fx": "grade",
+      "start": 91.5,
+      "end": "end",
+      "look": "dream",
+      "strength": 0.6
+    },
+    {
+      "fx": "rgb-split",
+      "start": 91.6,
+      "end": "end",
+      "amount": 0.004,
+      "mode": "hold"
+    },
+    {
+      "fx": "kinetic-title",
+      "start": 93.6,
+      "end": 97.0,
+      "text": "EGO *DEATH*",
+      "at": "top",
+      "size": 150,
+      "accent": "violet",
+      "sound": "pop"
+    },
+    {
+      "fx": "lens",
+      "start": 93.2,
+      "end": 98.3,
+      "at": "face",
+      "size": 0.62,
+      "sound": "glass-tink"
+    },
+    {
+      "fx": "sparkles",
+      "start": 93.4,
+      "end": 98.3
+    }
+  ]
+}
