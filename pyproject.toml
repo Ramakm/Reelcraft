@@ -21,7 +21,7 @@ reelcraft = "reelcraft.cli:main"
 include = ["reelcraft*"]
 
 [tool.setuptools.package-data]
-reelcraft = ["fonts/*"]
+reelcraft = ["fonts/*", "templates/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

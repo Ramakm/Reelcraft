@@ -8,6 +8,7 @@ from PIL import Image, ImageDraw
 from reelcraft import demo
 from reelcraft.core import plan as P
 from reelcraft.core import render as R
+from reelcraft.core import templates as T
 from reelcraft.core.canvas import font
 from reelcraft.core.registry import CATEGORIES, CATEGORY_BLURB, REGISTRY, by_category, load_library
 
@@ -81,4 +82,31 @@ def write_gallery(outdir, per_effect=False):
                 im.save(os.path.join(outdir, f"{e.name}.jpg"), quality=88)
             print("  ", e.name)
         sheet.save(os.path.join(outdir, "gallery.jpg"), quality=86)
-    print("wrote", os.path.join(outdir, "gallery.jpg"))
+        print("wrote", os.path.join(outdir, "gallery.jpg"))
+        write_templates_sheet(clip, outdir)
+
+
+def write_templates_sheet(clip, outdir):
+    """One frame from each built-in template, at the moment it looks best, on a labelled sheet."""
+    tpls = {k: v for k, v in T.available().items() if v["source"] == "built-in"}
+    tw, th, lab = 300, 533, 62
+    cols = 6
+    rows = -(-len(tpls) // cols)
+    sheet = Image.new("RGB", (cols * tw, rows * (th + lab)), (17, 17, 20))
+    d = ImageDraw.Draw(sheet)
+    f1, f2 = font("ui-semi", 18), font("ui", 14)
+    for i, (name, t) in enumerate(sorted(tpls.items())):
+        entries = T.entries(name)
+        imgs, _ = R.stills(clip, lambda dur: P.build(entries, dur), [min(MOMENT_T.get(name, 0.58), 0.95) * 6], face=demo.FACE)
+        x, y = (i % cols) * tw, (i // cols) * (th + lab)
+        sheet.paste(Image.fromarray(imgs[0]).resize((tw, th), Image.LANCZOS), (x, y))
+        d.text((x + 12, y + th + 10), name, font=f1, fill=(238, 232, 218))
+        d.text((x + 12, y + th + 36), t["niche"], font=f2, fill=(150, 146, 138))
+    path = os.path.join(outdir, "templates.jpg")
+    sheet.save(path, quality=86)
+    print("wrote", path)
+
+
+# Where in each template (0..1 of the clip) to take its picture.
+MOMENT_T = {"hype-intro": 0.5, "clean-ugc": 0.55, "retro-tape": 0.72, "editorial": 0.76, "scrapbook": 0.6, "tech-walkthrough": 0.45,
+            "typography": 0.34, "motion-pop": 0.55, "noir-story": 0.3, "messages-drop": 0.82, "glass-lens": 0.6, "print-room": 0.62}

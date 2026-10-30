@@ -1,6 +1,6 @@
 ---
 name: reelcraft
-description: Add effects, stickers, motion graphics and colour grades to a video (punch-ins, kinetic titles, stat cards, lower thirds, confetti, glitch, VHS, polaroid frame, captions and more). Effects follow the speaker's face. Use when the user types /reelcraft, names one of these effects, or asks to add an effect, zoom, sticker, title, caption, grade or animation to their video.
+description: Add effects, stickers, motion graphics, captions, colour grades, sound effects and ready-made style templates to a video (punch-ins, kinetic titles, stat cards, lower thirds, chat bubbles, notifications, liquid-glass lens, confetti, glitch, VHS, halftone, polaroid frame and more). Effects follow the speaker's face. Use when the user types /reelcraft, names one of these effects, or asks to add an effect, zoom, sticker, title, caption, grade or animation to their video.
 ---
 
 # Reelcraft
@@ -24,6 +24,12 @@ Shorthand used below: `RC` = `.venv/bin/python -m reelcraft`.
 - `docs/CATALOG.md` has everything in one place.
 Match the user's words to an effect (aliases work: "zoom" is `punch-in`, "subtitles" is `caption`). If unsure, show them a short list of 3 to 5 options.
 
+## 2b. Templates, captions and sound
+- **Templates** are whole looks. `RC templates` lists them, `RC templates <name>` shows its parameters. Use one with `--template <name> --set key=value`. They fit any clip length. Prefer a template when the user describes a vibe ("retro", "editorial", "tech explainer", "scrapbook") and then adjust with extra effects.
+- **Captions**: `--captions file.srt --caption-style clean|bold|mixed|highlight`. You cannot hear audio, so you need a subtitle file from the user. If they have none, ask whether they have one (CapCut, Whisper, YouTube and Descript can export .srt); don't invent caption text from the video's frames.
+- **Sound** is opt-in. Add `--sound` only if the user asks for sound effects. Pick a specific one per effect with `"sound": "coin"` (`"none"` mutes one). `RC sounds` lists them. It mixes under the original audio.
+- **Save a look** the user likes: `RC look save <name> --plan <plan>`; reuse with `--template <name>`. Use percent times (`"40%"`) or from-the-end times (`"-3"`) so it fits other clips.
+
 ## 3. Timing
 - If the user gives times ("at 3 seconds", "for the first 2s"), use them.
 - If they say "when I say X", you cannot hear the video. Scrub it: `RC still <video> --plan <plan> --at 0,2,4,6,8 <sheet.png>` and read the contact sheet, or ask them for the time.
@@ -39,7 +45,7 @@ Match the user's words to an effect (aliases work: "zoom" is `punch-in`, "subtit
      {"fx": "sticker", "start": 3.2, "end": 6.0, "name": "flame", "at": "top-right"}
    ]}
    ```
-   Everything except `fx`, `start`, `end` is an option of that effect. Times are seconds or `m:ss`. Omit `end` for the effect's default length. Ready-made starting points live in `examples/`.
+   Everything except `fx`, `start`, `end` (and optional `sound`) is an option of that effect. Times are seconds, `m:ss`, a percent of the clip (`"40%"`) or counted from the end (`"-3"`). Omit `end` for the effect's default length. Ready-made starting points live in `examples/`.
 2. Check first (fast, a few seconds):
    `RC still <video> --plan <plan> --at 2.7,4.5 <folder>/check.png`
    Open the PNG and look at it yourself. Fix anything that covers the face, runs off an edge, is hard to read, or fights another effect.
@@ -51,9 +57,9 @@ Single effect without a plan: `RC render <video> out.mp4 -e "punch-in@2-3.5 zoom
 ## Rules of thumb
 - Use the user's real words and numbers in titles, captions and stat cards. Never invent statistics.
 - Face tracking is automatic. If a still shows effects aimed at the wrong spot (no face found or wrong person), pin it: `--face x,y,size` as fractions of the frame, e.g. `--face 0.5,0.35,0.28`.
-- Wrap a word in `*stars*` inside `kinetic-title` text to put it in an accent box.
+- Wrap a word in `*stars*` inside `kinetic-title` text to put it in an accent box. Separate lines of `messages` and `terminal` with `|`.
 - `at` takes a name (`above`, `below`, `left`, `right`, `top-left`, `top-right`, `top`, `bottom`, `center`) or `x,y` fractions like `0.8,0.2`.
 - Colours are names (`coral`, `amber`, `lime`, `mint`, `sky`, `violet`, `rose`, `ink`, `paper`) or hex.
 - Vertical video with the speaker in frame works best. It is a first draft: they approve before posting.
-- No sound or speech-to-text is added.
+- No speech-to-text is built in.
 - If `RC` errors, the message is written for humans. Fix the plan and retry; if it names a missing tool, run `RC doctor`.

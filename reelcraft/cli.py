@@ -99,11 +99,12 @@ def _progress(label):
 def cmd_render(args):
     out = args.output or os.path.splitext(args.input)[0] + "_reelcraft.mp4"
     plan = R.render(args.input, out, _plan_builder(args), args.width, _parse_face(args.face) if args.face else None,
-                    args.crf, _progress("render"))
+                    args.crf, _progress("render"), sound=args.sound)
     sys.stderr.write("\r" + " " * 70 + "\r")
     for w in plan.warnings:
         print("warning:", w)
-    print(f"{len(plan.items)} effect(s) applied -> {out}")
+    extra = f", {len(plan.cues)} sound cue(s)" if plan.cues else ""
+    print(f"{len(plan.items)} effect(s){extra} -> {out}")
     return 0
 
 
@@ -114,6 +115,57 @@ def cmd_still(args):
     for w in plan.warnings:
         print("warning:", w)
     print(f"{len(imgs)} frame(s) -> {args.output}")
+    return 0
+
+
+def cmd_templates(args):
+    tpl = T.available()
+    if args.name:
+        t = T.get(args.name)
+        print(f"{BOLD}{t['name']}{RESET}  [{t['niche'] or 'custom'}, {t['source']}]")
+        print(f"  {t['summary']}")
+        if t["params"]:
+            print("  parameters (change with --set key=value):")
+            for k, v in t["params"].items():
+                print(f"    {k:<8} = {v!r}")
+        print("  effects:", ", ".join(dict.fromkeys(e["fx"] for e in t["effects"])))
+        return 0
+    for name, t in sorted(tpl.items(), key=lambda kv: (kv[1]["source"] != "yours", kv[1]["niche"], kv[0])):
+        tag = f"{DIM}[{t['niche'] or 'custom'}{', yours' if t['source'] == 'yours' else ''}]{RESET}"
+        print(f"  {name:<18} {tag:<28} {t['summary']}")
+    print(f"\n{len(tpl)} templates. Use one with: reelcraft render clip.mp4 out.mp4 --template NAME --set key=value")
+    return 0
+
+
+def cmd_look(args):
+    if args.action == "save":
+        entries = _entries(args)
+        if not entries:
+            raise SystemExit("nothing to save: give --template, --plan and/or -e specs describing the look")
+        path = T.save(args.name, entries, args.summary or "")
+        print(f"saved look {args.name!r} -> {path}")
+        print(f"use it with: reelcraft render clip.mp4 out.mp4 --template {args.name}")
+        return 0
+    path = os.path.join(T.user_dir(), args.name + ".json")
+    if not os.path.exists(path):
+        raise SystemExit(f"no saved look called {args.name!r}")
+    os.remove(path)
+    print("deleted", args.name)
+    return 0
+
+
+def cmd_sounds(args):
+    for name, (_, desc) in sfx.SOUNDS.items():
+        print(f"  {name:<14} {desc}")
+    print("\nDefault cues (used with --sound):")
+    for fx, snd in sorted(sfx.DEFAULT_CUE.items()):
+        print(f"  {fx:<15} -> {snd}")
+    return 0
+
+
+def cmd_sound(args):
+    sfx.write_wav(args.output, sfx.render_sound(args.name)[:, None])
+    print("wrote", args.output)
     return 0
 
 
@@ -163,6 +215,10 @@ def build_parser():
     def common(p):
         p.add_argument("input", help="source video")
         p.add_argument("--plan", help="JSON edit plan")
+        p.add_argument("--template", action="append", metavar="NAME", help="start from a style template (see `reelcraft templates`)")
+        p.add_argument("--set", action="append", metavar="KEY=VALUE", help="fill a template parameter (repeatable)")
+        p.add_argument("--captions", metavar="FILE", help="add captions from an .srt or .vtt file")
+        p.add_argument("--caption-style", default="highlight", choices=("clean", "bold", "mixed", "highlight"), help="caption look (default highlight)")
         p.add_argument("-e", "--fx", action="append", metavar="SPEC", help="inline effect, e.g. 'punch-in@2-3.5 zoom=1.5' (repeatable)")
         p.add_argument("--width", type=int, help="output width in px (default: source width, max 1080)")
         p.add_argument("--face", metavar="X,Y,SIZE", help="skip tracking and pin the face (fractions of the frame)")
@@ -170,9 +226,17 @@ def build_parser():
     p = sub.add_parser("list", help="show every effect"); p.add_argument("category", nargs="?", choices=CATEGORIES); p.set_defaults(fn=cmd_list)
     p = sub.add_parser("info", help="options for one effect"); p.add_argument("name"); p.set_defaults(fn=cmd_info)
     p = sub.add_parser("render", help="render a video"); common(p)
-    p.add_argument("output", nargs="?"); p.add_argument("--crf", type=int, default=18, help="x264 quality, lower is better (default 18)"); p.set_defaults(fn=cmd_render)
+    p.add_argument("output", nargs="?"); p.add_argument("--crf", type=int, default=18, help="x264 quality, lower is better (default 18)")
+    p.add_argument("--sound", action="store_true", help="add each effect's default sound effect (off by default)"); p.set_defaults(fn=cmd_render)
     p = sub.add_parser("still", help="render a few frames to PNG to check the look before a full render"); common(p)
     p.add_argument("--at", required=True, help="comma-separated times, e.g. 2.5,4,7"); p.add_argument("output"); p.set_defaults(fn=cmd_still)
+    p = sub.add_parser("templates", help="list style templates, or show one"); p.add_argument("name", nargs="?"); p.set_defaults(fn=cmd_templates)
+    p = sub.add_parser("look", help="save or delete your own reusable look")
+    p.add_argument("action", choices=("save", "delete")); p.add_argument("name")
+    p.add_argument("--plan"); p.add_argument("--template", action="append"); p.add_argument("--set", action="append"); p.add_argument("-e", "--fx", action="append")
+    p.add_argument("--summary", help="one line describing the look"); p.set_defaults(fn=cmd_look)
+    p = sub.add_parser("sounds", help="list built-in sound effects and default cues"); p.set_defaults(fn=cmd_sounds)
+    p = sub.add_parser("sound", help="export one sound effect as a wav to preview it"); p.add_argument("name"); p.add_argument("output"); p.set_defaults(fn=cmd_sound)
     p = sub.add_parser("doctor", help="check the install"); p.set_defaults(fn=cmd_doctor)
     p = sub.add_parser("catalog", help="regenerate docs/CATALOG.md"); p.add_argument("output", nargs="?", default="docs/CATALOG.md"); p.set_defaults(fn=cmd_catalog)
     p = sub.add_parser("demo", help="make a short sample clip to try things on"); p.add_argument("output", nargs="?", default="demo.mp4"); p.add_argument("--seconds", type=float, default=8); p.set_defaults(fn=cmd_demo)
@@ -185,8 +249,8 @@ def main(argv=None):
     args = build_parser().parse_args(argv)
     try:
         return args.fn(args)
-    except (MediaError, P.PlanError, ValueError) as e:
-        print(f"error: {e}", file=sys.stderr)
+    except (MediaError, P.PlanError, KeyError, ValueError) as e:
+        print(f"error: {e.args[0] if isinstance(e, KeyError) and e.args else e}", file=sys.stderr)
         return 1
     except KeyboardInterrupt:
         return 130

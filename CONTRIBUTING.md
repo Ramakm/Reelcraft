@@ -26,6 +26,14 @@ Every effect module in `reelcraft/library/` is discovered automatically. The CLI
 6. **Describe every option.** Each `Param` needs a one-line doc; tests fail without it.
 7. **Pick the layer.** `camera` < `look` < `frame` < `motion` < `sticker`. Effects draw in that order whatever order the plan lists them.
 
+## Adding a template
+
+A template is one JSON file in `reelcraft/templates/` with a `niche`, a one-line `summary`, `params` (the `{placeholders}` people can `--set`) and `effects`. Use relative times (`"40%"`, `"-3"`) so it fits any clip. The test suite builds every template at 4, 8 and 60 seconds and fails on unfilled placeholders.
+
+## Adding a sound
+
+Write a function returning a numpy array in `reelcraft/core/sfx.py` and register it in `SOUNDS`. Keep it synthesized and deterministic (seed any noise). To make an effect play it by default, add it to `DEFAULT_CUE`.
+
 ## Workflow
 
 ```bash

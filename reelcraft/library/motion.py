@@ -326,7 +326,7 @@ def caption(ctx, frame, text, accent, at, size):
         cx, cy = place(ctx, at)
     fade = fade_io(ctx, 0.2, 0.2)
     active = min(len(words) - 1, int(ctx.u * len(words)))
-    gap = size * 0.28
+    gap = size * 0.4
     maxw = max(sum(text_width(w, "ui-bold", size) for w in ln) + gap * (len(ln) - 1) for ln in lines)
     pill = rrect_sprite(int(maxw + size * 1.1), int(block_h + size * 0.55), int(size * 0.55), "#111114", alpha=185)
     blit(frame, pill, cx, cy, scale=lerp(0.92, 1.0, out_cubic(ctx.lt / 0.25)), alpha=fade)
@@ -338,7 +338,7 @@ def caption(ctx, frame, text, accent, at, size):
         for w, ww in zip(ln, widths):
             on = i == active
             spr = text_sprite(w, "ui-bold", size, accent if on else "#FFFFFF")
-            blit(frame, spr, x + ww / 2, y - (size * 0.06 if on else 0), scale=1.12 if on else 1.0, alpha=fade * (1 if i <= active else 0.55))
+            blit(frame, spr, x + ww / 2, y - (size * 0.06 if on else 0), scale=1.06 if on else 1.0, alpha=fade * (1 if i <= active else 0.55))
             x += ww + gap
             i += 1
     return frame

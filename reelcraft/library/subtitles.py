@@ -50,7 +50,8 @@ def _chunks(cues, max_words):
         words = text.split()
         parts = [words[i:i + max_words] for i in range(0, len(words), max_words)]
         if len(parts) > 1 and len(parts[-1]) == 1:          # no orphan word
-            parts[-2] += parts.pop()
+            last = parts.pop()
+            parts[-1] += last
         total = sum(len(w) for w in words) or 1
         t = a
         for p in parts:
