@@ -1,0 +1,8 @@
+{"niche": "cinematic", "summary": "Moody monologue: black-and-white grade, grain, widescreen bars and a pool of light on the speaker.",
+ "params": {"title": "It started in *silence*"},
+ "effects": [
+  {"fx": "grade", "start": "0%", "end": "100%", "look": "noir"},
+  {"fx": "film", "start": "0%", "end": "100%", "grain": 0.05},
+  {"fx": "letterbox", "start": "0%", "end": "100%"},
+  {"fx": "spotlight", "start": "10%", "end": "90%", "dim": 0.7},
+  {"fx": "kinetic-title", "start": "14%", "end": "44%", "text": "{title}", "font": "serif-italic", "size": 140, "accent": "paper", "at": "top"}]}

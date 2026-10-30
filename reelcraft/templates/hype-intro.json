@@ -1,0 +1,10 @@
+{"niche": "creator edit", "summary": "Punchy opener: teal-orange grade, name plate, a punch-in on the hook and a big title with a flame sticker.",
+ "params": {"title": "WAIT FOR *IT*", "name": "Your Name", "role": "Creator"},
+ "effects": [
+  {"fx": "grade", "start": "0%", "end": "100%", "look": "teal-orange", "strength": 0.8},
+  {"fx": "film", "start": "0%", "end": "100%"},
+  {"fx": "lower-third", "start": "3%", "end": "30%", "name": "{name}", "role": "{role}"},
+  {"fx": "punch-in", "start": "36%", "end": "48%", "zoom": 1.45},
+  {"fx": "kinetic-title", "start": "38%", "end": "68%", "text": "{title}"},
+  {"fx": "sticker", "start": "40%", "end": "68%", "name": "flame", "at": "top-right"},
+  {"fx": "sparkles", "start": "38%", "end": "68%"}]}

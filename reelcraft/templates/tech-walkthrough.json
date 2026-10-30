@@ -1,0 +1,7 @@
+{"niche": "tech walkthroughs", "summary": "Explain a tool: a typing terminal, a callout on the key point and a progress bar for the steps.",
+ "params": {"cmd": "reelcraft render clip.mp4|# done: 1 video, 6 effects", "note": "this is the magic step", "label": "step 1 of 3"},
+ "effects": [
+  {"fx": "grade", "start": "0%", "end": "100%", "look": "frost", "strength": 0.5},
+  {"fx": "progress-bar", "start": "0%", "end": "100%", "label": "{label}"},
+  {"fx": "terminal", "start": "15%", "end": "60%", "text": "{cmd}"},
+  {"fx": "callout", "start": "62%", "end": "94%", "text": "{note}", "color": "mint"}]}

@@ -1,0 +1,6 @@
+{"niche": "creator edit", "summary": "Group-chat energy: a push notification lands, then texts pile up beside you.",
+ "params": {"title": "New message", "body": "you won't believe this", "texts": "wait|did you see it??|watch till the end"},
+ "effects": [
+  {"fx": "notification", "start": "6%", "end": "34%", "title": "{title}", "body": "{body}", "icon": "bolt"},
+  {"fx": "messages", "start": "36%", "end": "92%", "text": "{texts}"},
+  {"fx": "sticker", "start": "70%", "end": "92%", "name": "smile", "at": "top-right", "motion": "bounce"}]}

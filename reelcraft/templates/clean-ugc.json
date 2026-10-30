@@ -1,0 +1,7 @@
+{"niche": "UGC storytelling", "summary": "Warm, honest and uncluttered: a soft film grade, a name plate, a POV badge and one karaoke line.",
+ "params": {"name": "Your Name", "role": "Creator", "badge": "POV", "line": "this changed how I edit"},
+ "effects": [
+  {"fx": "grade", "start": "0%", "end": "100%", "look": "film", "strength": 0.6},
+  {"fx": "badge", "start": "2%", "end": "100%", "text": "{badge}", "at": "top-left", "motion": "float"},
+  {"fx": "lower-third", "start": "4%", "end": "28%", "name": "{name}", "role": "{role}", "accent": "mint"},
+  {"fx": "caption", "start": "40%", "end": "78%", "text": "{line}", "accent": "amber"}]}

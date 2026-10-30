@@ -7,7 +7,8 @@ A plan is JSON that Claude (or a person) can write by hand:
         {"fx": "kinetic-title", "start": 3, "end": 6, "text": "WAIT FOR IT"}
     ]}
 
-Anything besides fx/start/end is an option for that effect. Times can be seconds (2.5) or m:ss (1:05.5).
+Anything besides fx/start/end (and the optional "sound") is an option for that effect.
+Times can be seconds (2.5), m:ss (1:05.5), a percentage of the clip ("40%") or counted back from the end ("-3").
 """
 import json
 import re
@@ -27,12 +28,14 @@ class Item:
     end: float
     params: dict
     order: int = 0
+    sound: str = ""      # "" = use the effect's default cue (when sound is on), "none" = silent
 
 
 @dataclass
 class Plan:
     items: list = field(default_factory=list)
     warnings: list = field(default_factory=list)
+    cues: list = field(default_factory=list)      # sound cues, filled in by the renderer
 
     def active(self, t):
         return [it for it in self.items if it.start <= t < it.end]
@@ -48,6 +51,13 @@ def parse_time(v, duration=None):
     s = str(v).strip().lower()
     if s in ("end", "last") and duration is not None:
         return duration
+    if s.endswith("%") or s.startswith("-"):
+        if duration is None:
+            raise PlanError(f"{v!r} is relative to the clip length, which isn't known here")
+        try:
+            return duration * float(s[:-1]) / 100 if s.endswith("%") else max(0.0, duration + float(s))
+        except ValueError:
+            raise PlanError(f"can't read {v!r} as a time") from None
     if re.fullmatch(r"\d+(\.\d+)?s?", s):
         return float(s.rstrip("s"))
     m = re.fullmatch(r"(?:(\d+):)?(\d+):(\d+(?:\.\d+)?)", s)
@@ -63,6 +73,7 @@ def build(entries, duration=None):
         if not isinstance(e, dict) or "fx" not in e:
             raise PlanError(f"entry {n + 1} needs an 'fx' name")
         e = dict(e)
+        e.pop("_comment", None)
         try:
             eff = resolve(e.pop("fx"))
         except KeyError as err:
@@ -71,6 +82,8 @@ def build(entries, duration=None):
         end = e.pop("end", None)
         end = start + eff.default_len if end is None else parse_time(end, duration)
         e.pop("options", None) if not isinstance(e.get("options"), dict) else e.update(e.pop("options"))
+        sound = str(e.pop("sound", "") or "")
+        e.pop("_comment", None)
         if end <= start:
             raise PlanError(f"{eff.name}: end ({end}) must be after start ({start})")
         if duration:
@@ -83,7 +96,7 @@ def build(entries, duration=None):
             params = coerce(eff, e)
         except (KeyError, ValueError) as err:
             raise PlanError(str(err.args[0])) from None
-        plan.items.append(Item(eff.name, start, end, params, n))
+        plan.items.append(Item(eff.name, start, end, params, n, sound))
     # Stable sort by layer: camera < look < frame < motion < sticker; plan order breaks ties.
     plan.items.sort(key=lambda i: (CATEGORIES.index(resolve(i.name).category), i.order))
     return plan

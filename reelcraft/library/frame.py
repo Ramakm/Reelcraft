@@ -1,4 +1,5 @@
 """Effects that change the shape of the shot: bars, cards, reveals, borders."""
+import math
 from functools import lru_cache
 
 import cv2
@@ -108,3 +109,65 @@ def neon_frame(ctx, frame, color, thickness):
     flick = 1.0 if ctx.lt > 0.5 else (0.2 if int(ctx.lt * 18) % 2 else 1.0)    # tube warming up
     hum = 0.9 + 0.1 * np.sin(ctx.t * 9)
     return blit(frame, spr, ctx.W / 2, ctx.H / 2, alpha=flick * hum * fade_io(ctx, 0.05, 0.3))
+
+
+@lru_cache(maxsize=16)
+def _lens_overlay(R, tint):
+    d = 2 * R + 40
+    c = d // 2
+    yy, xx = np.mgrid[0:d, 0:d].astype(np.float32)
+    r = np.hypot(xx - c, yy - c) / R
+    col = np.array(rgb(tint), np.float32)
+    rim = np.clip((r - 0.86) / 0.14, 0, 1) ** 2 * (r <= 1.0)
+    a = rim * 0.55
+    # soft shadow outside the glass so it reads as an object, not a hole
+    sh = np.clip(1 - (r - 1.0) / 0.22, 0, 1) * (r > 1.0) * 0.28
+    spr = np.zeros((d, d, 4), np.float32)
+    spr[..., :3] = col * (rim[..., None] > 0) + 0 * (sh[..., None] > 0)
+    spr[..., 3] = (a + sh) * 255
+    spr[sh > 0, :3] = 0
+    spec = np.exp(-(((xx - c + R * 0.42) / (R * 0.28)) ** 2 + ((yy - c + R * 0.5) / (R * 0.12)) ** 2))   # window glint, upper left
+    spec2 = np.exp(-(((xx - c - R * 0.55) / (R * 0.12)) ** 2 + ((yy - c - R * 0.5) / (R * 0.05)) ** 2)) * 0.6
+    g = np.clip(spec + spec2, 0, 1) * (r < 0.97) * 0.8
+    spr[..., :3] = spr[..., :3] * (1 - g[..., None]) + 255 * g[..., None]
+    spr[..., 3] = np.maximum(spr[..., 3], g * 255)
+    return np.clip(spr, 0, 255).astype(np.uint8)
+
+
+@effect("lens", "frame", "Liquid-glass lens: a floating glass orb that magnifies what's under it, bending light at the rim.",
+        params=[Param("at", "face", "Where it floats: a face anchor or x,y fractions."), Param("size", 0.5, "Diameter as a fraction of the frame width."),
+                Param("mag", 1.45, "Magnification at the centre."), Param("tint", "#CFE8FF", "Rim and glint colour."),
+                Param("drift", True, "Float gently instead of staying put.")],
+        face=True, aliases=("liquid-glass", "magnify", "orb", "glass"), default_len=3)
+def lens(ctx, frame, at, size, mag, tint, drift):
+    from ._util import place
+    H, W = frame.shape[:2]
+    k = out_cubic(ctx.lt / 0.45) * out_cubic(ctx.left / 0.3)
+    if k <= 0.01:
+        return frame
+    cx, cy = place(ctx, at, 0.0)
+    if drift:
+        cx += math.sin(ctx.lt * 1.6) * ctx.px(24)
+        cy += math.cos(ctx.lt * 1.3) * ctx.px(18)
+    R = max(12, int(size * W / 2 * (0.6 + 0.4 * k)))
+    x0, y0 = int(cx - R), int(cy - R)
+    n = 2 * R
+    xs0, ys0, xs1, ys1 = max(0, x0), max(0, y0), min(W, x0 + n), min(H, y0 + n)
+    if xs1 <= xs0 or ys1 <= ys0:
+        return frame
+    gy, gx = np.mgrid[ys0:ys1, xs0:xs1].astype(np.float32)
+    dx, dy = gx - cx, gy - cy
+    r = np.hypot(dx, dy) / R
+    r_safe = np.maximum(r, 1e-4)
+    out = frame.copy()
+    chans = []
+    for ch, spread in enumerate((0.05, 0.0, -0.05)):        # tiny per-channel offset gives a chromatic fringe at the rim
+        kk = (mag - 1) * (1 + spread)
+        src = r_safe / mag * (1 + kk * r_safe ** 3)
+        s = src / r_safe
+        chans.append(cv2.remap(frame[..., ch], cx + dx * s, cy + dy * s, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT))
+    glass = np.dstack(chans)
+    m = (1 - np.clip((r - 0.985) / 0.015, 0, 1))[..., None]
+    reg = out[ys0:ys1, xs0:xs1]
+    reg[:] = (glass * m + reg * (1 - m)).astype(np.uint8)
+    return blit(out, _lens_overlay(R, tint), cx, cy, alpha=min(1.0, k * 1.5))

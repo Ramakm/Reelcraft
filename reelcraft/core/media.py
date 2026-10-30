@@ -79,10 +79,10 @@ def frames(media, W, H, fps, start=0.0, count=None):
         p.wait()
 
 
-def encoder(media, out, W, H, fps, crf=18):
-    """ffmpeg process that takes raw RGB on stdin and muxes the source audio back in."""
+def encoder(media, out, W, H, fps, crf=18, audio=None):
+    """ffmpeg process that takes raw RGB on stdin and muxes audio back in: the source's own, or `audio` (a wav)."""
     cmd = ["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", f"{fps}", "-i", "-"]
-    if media.has_audio:
-        cmd += ["-i", media.path, "-map", "0:v", "-map", "1:a:0", "-c:a", "aac", "-b:a", "192k", "-shortest"]
+    if audio or media.has_audio:
+        cmd += ["-i", audio or media.path, "-map", "0:v", "-map", "1:a:0", "-c:a", "aac", "-b:a", "192k", "-shortest"]
     cmd += ["-c:v", "libx264", "-preset", "medium", "-crf", str(crf), "-pix_fmt", "yuv420p", "-movflags", "+faststart", out]
     return subprocess.Popen(cmd, stdin=subprocess.PIPE)

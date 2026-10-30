@@ -1,4 +1,6 @@
 """Every effect must run on a synthetic frame at several moments and keep the frame valid."""
+import os
+
 import numpy as np
 import pytest
 
@@ -6,7 +8,8 @@ from reelcraft.core.context import Face
 
 from reelcraft.core.registry import REGISTRY, coerce
 
-SHOW = {"kinetic-title": {"text": "WAIT FOR *IT*"}, "stat-card": {"value": "97%"}, "caption": {"text": "one two three four"}}
+SRT = os.path.join(os.path.dirname(__file__), "data", "sample.srt")
+SHOW = {"subtitles": {"file": SRT}, "kinetic-title": {"text": "WAIT FOR *IT*"}, "stat-card": {"value": "97%"}, "caption": {"text": "one two three four"}}
 
 
 @pytest.mark.parametrize("name", sorted(REGISTRY))

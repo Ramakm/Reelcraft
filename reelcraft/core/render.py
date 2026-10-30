@@ -1,8 +1,12 @@
 """Render a plan onto a video, or onto a handful of still frames for a quick look."""
+import os
+import tempfile
+
 import numpy as np
 from PIL import Image
 
 from . import media as M
+from . import sfx
 from .context import Ctx
 from .plan import Plan
 from .registry import resolve
@@ -34,11 +38,32 @@ def prepare(path, plan_builder, width=None, face=None, progress=None, use_cache=
     return media, plan, track, W, H
 
 
-def render(path, out, plan_builder, width=None, face=None, crf=18, progress=None):
+def collect_cues(plan, auto):
+    """Sound cues for a plan. `auto` adds each effect's default sound; explicit per-entry sounds always count."""
+    cues = []
+    for it in plan.items:
+        if auto or (it.sound and it.sound != "none"):
+            cues += sfx.cues_for(it)
+    return cues
+
+
+def render(path, out, plan_builder, width=None, face=None, crf=18, progress=None, sound=False):
     media, plan, track, W, H = prepare(path, plan_builder, width, face, use_cache=True)
     fps = media.fps
     ctx = Ctx(W, H, fps, track.at(0))
-    enc = M.encoder(media, out, W, H, fps, crf)
+    cues = collect_cues(plan, sound)
+    with tempfile.TemporaryDirectory() as tmp:
+        wav = None
+        if cues:
+            wav = os.path.join(tmp, "mix.wav")
+            sfx.write_wav(wav, sfx.mix(sfx.source_audio(path, media.duration), cues))
+        _encode(media, out, plan, track, ctx, W, H, fps, crf, progress, wav)
+    plan.cues = cues
+    return plan
+
+
+def _encode(media, out, plan, track, ctx, W, H, fps, crf, progress, wav):
+    enc = M.encoder(media, out, W, H, fps, crf, audio=wav)
     total = max(1, int(media.duration * fps))
     try:
         for i, frame in enumerate(M.frames(media, W, H, fps)):
@@ -55,7 +80,6 @@ def render(path, out, plan_builder, width=None, face=None, crf=18, progress=None
         enc.wait()
     if enc.returncode:
         raise M.MediaError(f"ffmpeg failed with exit code {enc.returncode}")
-    return plan
 
 
 def stills(path, plan_builder, times, width=None, face=None):

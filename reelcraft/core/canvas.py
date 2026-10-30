@@ -19,6 +19,7 @@ FONT_FILES = {
     "ui-semi": "Poppins-SemiBold.ttf",
     "ui-bold": "Poppins-Bold.ttf",
     "hand": "CaveatBrush-Regular.ttf",
+    "mono": "SpaceMono-Bold.ttf",
 }
 FONT_NAMES = tuple(FONT_FILES)
 
@@ -244,3 +245,28 @@ def paste_clip(frame, inner, x, y, radius=0):
     m = rrect_sprite(w, h, radius, "#FFFFFF")[..., 3][y0 - y:y1 - y, x0 - x:x1 - x, None] / 255.0
     frame[y0:y1, x0:x1] = (sub * m + frame[y0:y1, x0:x1] * (1 - m)).astype(np.uint8)
     return frame
+
+
+def glass_sprite(frame, x0, y0, w, h, radius, blur=22, dark=0.62, wash=0.12, border=2):
+    """A frosted-glass panel: the pixels behind the rect, blurred, dimmed and lifted, with a hairline edge.
+    Returns an RGBA sprite the size of the rect (the rect may hang off the frame)."""
+    H, W = frame.shape[:2]
+    x0, y0, w, h = int(x0), int(y0), int(w), int(h)
+    pad = int(blur * 2)
+    cx0, cy0, cx1, cy1 = max(0, x0 - pad), max(0, y0 - pad), min(W, x0 + w + pad), min(H, y0 + h + pad)
+    if cx1 <= cx0 or cy1 <= cy0:
+        return new_sprite(w, h)
+    reg = cv2.GaussianBlur(frame[cy0:cy1, cx0:cx1], (0, 0), blur)
+    reg = cv2.copyMakeBorder(reg, max(0, cy0 - (y0 - pad)), max(0, (y0 + h + pad) - cy1), max(0, cx0 - (x0 - pad)),
+                             max(0, (x0 + w + pad) - cx1), cv2.BORDER_REPLICATE)
+    reg = reg[pad:pad + h, pad:pad + w]
+    if reg.shape[:2] != (h, w):
+        reg = cv2.resize(reg, (w, h))
+    glass = np.clip(reg * dark + 255 * wash, 0, 255).astype(np.uint8)
+    mask = rrect_sprite(w, h, radius, "#FFFFFF")[..., 3]
+    spr = np.dstack([glass, mask])
+    ring = rrect_sprite(w, h, radius, "#FFFFFF", outline="#FFFFFF", outline_w=border, alpha=0)[..., 3]
+    edge = ring > 0
+    spr[edge, :3] = 255
+    spr[edge, 3] = np.maximum(spr[edge, 3] * 0, ring[edge] * 120 // 255 + 20)
+    return spr

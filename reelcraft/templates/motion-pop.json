@@ -1,0 +1,10 @@
+{"niche": "motion graphics", "summary": "A win, announced loudly: speed lines, a counting stat card, a shake, confetti and a burst badge.",
+ "params": {"value": "2.4M", "label": "views this week", "badge": "NEW RECORD"},
+ "effects": [
+  {"fx": "speed-lines", "start": "8%", "end": "20%"},
+  {"fx": "punch-in", "start": "8%", "end": "20%", "zoom": 1.35},
+  {"fx": "stat-card", "start": "24%", "end": "70%", "value": "{value}", "label": "{label}", "at": "below"},
+  {"fx": "shake", "start": "40%", "end": "48%"},
+  {"fx": "confetti", "start": "42%", "end": "80%", "at": "below"},
+  {"fx": "badge", "start": "44%", "end": "92%", "text": "{badge}", "shape": "burst", "at": "top-left"},
+  {"fx": "sticker-swipe", "start": "88%", "end": "100%"}]}

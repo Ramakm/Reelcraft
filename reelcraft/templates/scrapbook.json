@@ -1,0 +1,7 @@
+{"niche": "paper and scrapbook", "summary": "Your video becomes a taped-in photo on a craft table, with doodle stickers and a handwritten caption.",
+ "params": {"caption": "summer notes", "badge": "NEW"},
+ "effects": [
+  {"fx": "polaroid", "start": "6%", "end": "96%", "caption": "{caption}", "color": "#D9A066", "tilt": -3},
+  {"fx": "sticker", "start": "22%", "end": "96%", "name": "star", "at": "0.16,0.14", "motion": "wiggle"},
+  {"fx": "sticker", "start": "30%", "end": "96%", "name": "heart", "at": "0.86,0.2", "motion": "float"},
+  {"fx": "badge", "start": "38%", "end": "96%", "text": "{badge}", "shape": "tape", "at": "0.78,0.88", "color": "amber", "ink": "ink"}]}

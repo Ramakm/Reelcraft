@@ -146,3 +146,42 @@ def spotlight(ctx, frame, dim, color, size):
         params=[Param("color", "#FFFFFF", "Flash colour.")], aliases=("pop-flash",), default_len=0.35)
 def flash(ctx, frame, color):
     return fill_rect(frame, 0, 0, ctx.W, ctx.H, color, (1 - ctx.u) ** 2)
+
+
+@effect("halftone", "look", "Printed-poster dots. Mono ink on paper, or let some colour bleed through.",
+        params=[Param("cell", 16, "Dot spacing at 1080 wide."), Param("ink", "#16161A", "Dot colour."),
+                Param("paper", "#F6F1E7", "Paper colour."), Param("color", 0.0, "0 = pure ink, 1 = full-colour dots."),
+                Param("strength", 1.0, "Blend with the original.")],
+        aliases=("print", "newsprint", "comic"), default_len=3)
+def halftone(ctx, frame, cell, ink, paper, color, strength):
+    H, W = frame.shape[:2]
+    gray = cv2.GaussianBlur(cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY), (0, 0), max(1, ctx.px(cell) / 4)).astype(np.float32) / 255
+    lo, hi = np.percentile(gray, (2, 98))
+    gray = np.clip((gray - lo) / max(hi - lo, 1e-3), 0, 1) ** 0.75       # auto-levels so dots read on any footage
+    yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+    c = max(4.0, ctx.px(cell))
+    ang = np.deg2rad(45)
+    u = (xx * np.cos(ang) + yy * np.sin(ang)) / c
+    v = (-xx * np.sin(ang) + yy * np.cos(ang)) / c
+    pattern = (np.cos(2 * np.pi * u) + np.cos(2 * np.pi * v)) / 4 + 0.5          # 0..1, peaks at dot centres
+    m = np.clip(((1 - gray) - (1 - pattern) * 0.9) * 6 + 0.5, 0, 1)[..., None]
+    ink_c, paper_c = np.array(rgb(ink), np.float32), np.array(rgb(paper), np.float32)
+    out = paper_c * (1 - m) + ink_c * m
+    if color > 0:
+        out = out * (1 - color) + (frame * (0.4 + 0.6 * (1 - m))) * color
+    k = strength * fade_io(ctx, 0.25, 0.25)
+    return np.clip(out * k + frame * (1 - k), 0, 255).astype(np.uint8)
+
+
+@effect("sketch", "look", "Pencil sketch on paper, with an optional wash of the original colour.",
+        params=[Param("paper", "#F6F1E7", "Paper colour."), Param("wash", 0.25, "How much original colour tints the drawing."),
+                Param("strength", 1.0, "Blend with the original.")],
+        aliases=("pencil", "drawing"), default_len=3)
+def sketch(ctx, frame, paper, wash, strength):
+    gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+    blur = cv2.GaussianBlur(255 - gray, (0, 0), max(3, ctx.px(9)))
+    pencil = cv2.divide(gray, 255 - blur, scale=256).astype(np.float32)[..., None] / 255
+    out = np.array(rgb(paper), np.float32) * pencil
+    out = out * (1 - wash) + out * (0.55 + 0.45 * frame.astype(np.float32) / 255) * wash * 1.0 + out * 0 if wash else out
+    k = strength * fade_io(ctx, 0.25, 0.25)
+    return np.clip(out * k + frame * (1 - k), 0, 255).astype(np.uint8)

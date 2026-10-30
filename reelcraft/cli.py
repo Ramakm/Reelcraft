@@ -7,6 +7,8 @@ import time
 from reelcraft import __version__
 from reelcraft.core import plan as P
 from reelcraft.core import render as R
+from reelcraft.core import sfx
+from reelcraft.core import templates as T
 from reelcraft.core.media import MediaError
 from reelcraft.core.registry import CATEGORIES, CATEGORY_BLURB, by_category, load_library, resolve
 
@@ -21,8 +23,24 @@ def _parse_face(s):
     return x, y, size
 
 
-def _plan_builder(args):
+def _kv(pairs):
+    out = {}
+    for kv in pairs or []:
+        k, sep, v = kv.partition("=")
+        if not sep:
+            raise SystemExit(f"--set wants key=value, got {kv!r}")
+        out[k.strip()] = v
+    return out
+
+
+def _entries(args):
     entries = []
+    overrides = _kv(getattr(args, "set", None))
+    names = getattr(args, "template", None) or []
+    if overrides and not names:
+        raise SystemExit("--set needs --template")
+    for name in names:
+        entries += T.entries(name, overrides)
     if getattr(args, "plan", None):
         import json
         try:
@@ -32,8 +50,15 @@ def _plan_builder(args):
         entries += data["effects"] if isinstance(data, dict) else data
     for spec in getattr(args, "fx", None) or []:
         entries.append(P.parse_spec(spec))
+    if getattr(args, "captions", None):
+        entries.append({"fx": "subtitles", "file": args.captions, "style": args.caption_style, "start": 0, "end": "end"})
+    return entries
+
+
+def _plan_builder(args):
+    entries = _entries(args)
     if not entries:
-        raise SystemExit("nothing to do: give --plan plan.json and/or one or more -e 'effect@start-end key=value'")
+        raise SystemExit("nothing to do: give --template NAME, --plan plan.json, --captions file.srt and/or -e 'effect@start-end key=value'")
     return lambda duration: P.build(entries, duration)
 
 
@@ -160,7 +185,7 @@ def main(argv=None):
     args = build_parser().parse_args(argv)
     try:
         return args.fn(args)
-    except (MediaError, P.PlanError) as e:
+    except (MediaError, P.PlanError, ValueError) as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
     except KeyboardInterrupt:

@@ -1,0 +1,8 @@
+{"niche": "editorial overlays", "summary": "Magazine calm: film grade, widescreen bars, a serif headline, a hand-drawn underline and a margin note.",
+ "params": {"title": "The *quiet* revolution", "note": "this is the key part"},
+ "effects": [
+  {"fx": "grade", "start": "0%", "end": "100%", "look": "film", "strength": 0.9},
+  {"fx": "letterbox", "start": "0%", "end": "100%"},
+  {"fx": "kinetic-title", "start": "12%", "end": "46%", "text": "{title}", "font": "serif-italic", "size": 150, "accent": "paper", "at": "top"},
+  {"fx": "underline", "start": "46%", "end": "72%", "style": "underline", "at": "below", "color": "coral"},
+  {"fx": "callout", "start": "58%", "end": "92%", "text": "{note}", "color": "paper"}]}

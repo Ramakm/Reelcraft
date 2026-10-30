@@ -1,0 +1,7 @@
+{"niche": "creator edit", "summary": "Dreamy and modern: a liquid-glass orb over the face, a frosted number card and a soft grade.",
+ "params": {"value": "97%", "label": "would recommend"},
+ "effects": [
+  {"fx": "grade", "start": "0%", "end": "100%", "look": "dream", "strength": 0.7},
+  {"fx": "lens", "start": "12%", "end": "66%", "at": "face"},
+  {"fx": "stat-card", "start": "40%", "end": "92%", "value": "{value}", "label": "{label}", "at": "below"},
+  {"fx": "sparkles", "start": "12%", "end": "92%"}]}

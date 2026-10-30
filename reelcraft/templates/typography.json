@@ -1,0 +1,7 @@
+{"niche": "typography", "summary": "Words do the work: two big kinetic titles in different faces with a marker highlight between.",
+ "params": {"title": "STOP *SCROLLING*", "title2": "Start making", "at": "auto"},
+ "effects": [
+  {"fx": "grade", "start": "0%", "end": "100%", "look": "noir", "strength": 0.55},
+  {"fx": "kinetic-title", "start": "6%", "end": "40%", "text": "{title}", "at": "{at}", "size": 200},
+  {"fx": "underline", "start": "26%", "end": "42%", "style": "highlight", "at": "below", "color": "amber"},
+  {"fx": "kinetic-title", "start": "50%", "end": "92%", "text": "{title2}", "font": "serif-italic", "size": 170, "accent": "lime", "at": "{at}"}]}

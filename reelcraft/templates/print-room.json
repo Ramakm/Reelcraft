@@ -1,0 +1,7 @@
+{"niche": "photomontage", "summary": "Cut-and-paste print look: halftone dots, a whip-pan into a pencil sketch, then a bold title.",
+ "params": {"title": "MADE *BY HAND*"},
+ "effects": [
+  {"fx": "halftone", "start": "0%", "end": "42%", "color": 0.6},
+  {"fx": "whip", "start": "40%", "end": "50%"},
+  {"fx": "sketch", "start": "44%", "end": "78%"},
+  {"fx": "kinetic-title", "start": "52%", "end": "92%", "text": "{title}", "color": "ink", "accent": "coral", "at": "top"}]}

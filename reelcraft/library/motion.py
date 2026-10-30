@@ -342,3 +342,28 @@ def caption(ctx, frame, text, accent, at, size):
             x += ww + gap
             i += 1
     return frame
+
+
+@effect("speed-lines", "motion", "Manga-style speed lines burst out from the speaker. Pairs well with a punch-in.",
+        params=[Param("color", "white", "Line colour."), Param("count", 64, "Number of lines."),
+                Param("clear", 1.5, "How wide the clear zone around the face is (in face-heights)."),
+                Param("opacity", 0.85, "Line opacity.")],
+        face=True, aliases=("manga", "anime", "burst-lines"), default_len=1.2)
+def speed_lines(ctx, frame, color, count, clear, opacity):
+    f = ctx.face
+    col = rgb(color)
+    r = ctx.rng(int(ctx.t * 12))          # the pattern re-rolls 12 times a second, like hand-drawn animation
+    reach = math.hypot(ctx.W, ctx.H)
+    layer = frame.copy()
+    for _ in range(count):
+        ang = r.uniform(0, 2 * math.pi)
+        r0 = f.h * clear * r.uniform(1.0, 1.5)
+        r1 = reach * r.uniform(0.7, 1.0)
+        wid = r.uniform(0.004, 0.018)
+        a0, a1 = ang - wid, ang + wid
+        p = np.array([[f.cx + math.cos(ang) * r0, f.cy + math.sin(ang) * r0],
+                      [f.cx + math.cos(a0) * r1, f.cy + math.sin(a0) * r1],
+                      [f.cx + math.cos(a1) * r1, f.cy + math.sin(a1) * r1]], np.int32)
+        cv2.fillConvexPoly(layer, p, col, cv2.LINE_AA)
+    a = opacity * fade_io(ctx, 0.05, 0.25)
+    return cv2.addWeighted(layer, a, frame, 1 - a, 0)

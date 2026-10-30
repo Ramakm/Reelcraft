@@ -16,10 +16,11 @@ SHOWCASE = {
     "kinetic-title": {"text": "WAIT FOR *IT*"}, "lower-third": {"name": "Jaya M.", "role": "Creator"},
     "caption": {"text": "this is how you say it"}, "callout": {"text": "Look here"},
     "stat-card": {"value": "2.4M", "label": "views"}, "ticker": {}, "badge": {"text": "LIVE"},
-    "polaroid": {"caption": "day one"}, "sticker": {"name": "heart"}, "progress-bar": {"label": "wait for it"},
+    "polaroid": {"caption": "day one"}, "subtitles": {"file": os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tests", "data", "sample.srt")},
+    "messages": {"text": "hey|are you free tonight?|yes!! finally"}, "notification": {}, "terminal": {}, "underline": {"style": "circle", "at": "face", "width": 0.4, "height": 0.2}, "sticker": {"name": "heart"}, "progress-bar": {"label": "wait for it"},
 }
 # Moment inside the effect's own window to photograph (fraction of the window).
-MOMENT = {"flash": 0.1, "shake": 0.15, "punch-in": 0.5, "glitch": 0.3, "iris": 0.55, "countdown": 0.2, "confetti": 0.25,
+MOMENT = {"messages": 0.9, "terminal": 0.8, "whip": 0.5, "sticker-swipe": 0.5, "speed-lines": 0.4, "lens": 0.6, "subtitles": 0.12, "flash": 0.1, "shake": 0.15, "punch-in": 0.5, "glitch": 0.3, "iris": 0.55, "countdown": 0.2, "confetti": 0.25,
           "float-up": 0.6, "rgb-split": 0.5, "pulse": 0.02, "letterbox": 0.5}
 
 

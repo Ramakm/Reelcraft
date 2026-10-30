@@ -303,3 +303,34 @@ def float_up(ctx, frame, name, count, size, side):
         a = smooth(k * 8) * (1 - smooth((k - 0.65) / 0.35))
         blit(frame, sticker_art(name, max(32, int(s))), x, y, rot=math.sin(tt * 4 + i) * 14, scale=0.6 + 0.4 * out_back(k * 4), alpha=a)
     return frame
+
+
+@effect("sticker-swipe", "sticker", "A diagonal colour slab sweeps across the screen carrying a column of stickers. A transition with personality.",
+        params=[Param("names", "star|heart|sparkle|bolt|flame", "Stickers on the slab, separated by |."),
+                Param("color", "coral", "Slab colour."), Param("size", 300, "Sticker width at 1080 wide."),
+                Param("direction", "right", "Which way it sweeps.", ("right", "left"))],
+        aliases=("sticker-transition", "wipe", "swipe"), default_len=1.1)
+def sticker_swipe(ctx, frame, names, color, size, direction):
+    import cv2
+    from reelcraft.core.easing import in_out_cubic
+    W, H = ctx.W, ctx.H
+    sign = 1 if direction == "right" else -1
+    u = in_out_cubic(ctx.u)
+    slab_w = W * 0.62
+    cx = (-0.45 + 1.9 * u) * W if sign > 0 else (1.45 - 1.9 * u) * W
+    skew = math.tan(math.radians(14)) * H / 2
+    pts = np.array([[cx - slab_w / 2 + skew, 0], [cx + slab_w / 2 + skew, 0], [cx + slab_w / 2 - skew, H], [cx - slab_w / 2 - skew, H]], np.int32)
+    layer = frame.copy()
+    cv2.fillConvexPoly(layer, pts, rgb(color), cv2.LINE_AA)
+    edge = pts + np.array([[int(-sign * slab_w * 0.06), 0]] * 4, np.int32)
+    cv2.polylines(layer, [edge], True, (255, 255, 255), max(3, int(ctx.px(8))), cv2.LINE_AA)
+    out = layer
+    kinds = [n for n in names.split("|") if n in ART] or ["star"]
+    rows = 5
+    for i in range(rows):
+        r = ctx.rng(i)
+        y = H * (i + 0.5) / rows
+        x = cx + (y - H / 2) / H * -2 * skew + r.uniform(-1, 1) * slab_w * 0.12
+        blit(out, sticker_art(kinds[i % len(kinds)], max(32, int(ctx.px(size) * r.uniform(0.8, 1.15)))), x, y,
+             rot=r.uniform(-18, 18) + math.sin(ctx.lt * 6 + i) * 4)
+    return out

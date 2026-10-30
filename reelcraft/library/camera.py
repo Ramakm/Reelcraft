@@ -48,3 +48,25 @@ def pulse(ctx, frame, bpm, amount):
     phase = (ctx.lt * bpm / 60.0) % 1.0
     k = math.exp(-phase * 7) * min(1, ctx.lt * 6) * min(1, ctx.left * 6)
     return ctx.zoom(frame, 1 + amount * k)
+
+
+@effect("whip", "camera", "Whip-pan: a fast sideways smear that peaks mid-window. Hides a cut or punctuates a beat.",
+        params=[Param("direction", "left", "Which way the camera whips.", ("left", "right", "up", "down")),
+                Param("strength", 0.3, "How violent the smear is.")],
+        aliases=("whip-pan", "swish-pan", "smear"), default_len=0.5)
+def whip(ctx, frame, direction, strength):
+    import cv2
+    import numpy as np
+    k = math.sin(math.pi * ctx.u) ** 2
+    H, W = frame.shape[:2]
+    horiz = direction in ("left", "right")
+    span = W if horiz else H
+    sign = -1 if direction in ("left", "up") else 1
+    shift = int(sign * span * strength * 0.6 * k)
+    out = np.roll(frame, shift, axis=1 if horiz else 0)
+    n = max(1, int(span * strength * 0.35 * k)) | 1
+    if n > 1:
+        ker = np.zeros((n, n), np.float32)
+        ker[n // 2, :] = 1 / n
+        out = cv2.filter2D(out, -1, ker if horiz else ker.T, borderType=cv2.BORDER_REFLECT)
+    return out
